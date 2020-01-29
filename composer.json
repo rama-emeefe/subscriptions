@@ -1,0 +1,15 @@
+{
+    "name": "emeefe/subscriptions",
+    "description": "A laravel package for manage subscriptions",
+    "authors": [
+        {
+            "name": "Abraham Flores Cosme",
+            "email": "abr.flores24@gmail.com"
+        },
+        {
+            "name": "José Ricardo Pajarito Chapuli",
+            "email": "jose.pajarito@emeefe.mx"
+        }
+    ],
+    "require": {}
+}
