@@ -11,5 +11,18 @@
             "email": "jose.pajarito@emeefe.mx"
         }
     ],
-    "require": {}
+    "require": {},
+    "require-dev": {
+        "orchestra/testbench": "^3.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "Emeefe\\Subscriptions\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Emeefe\\Subscriptions\\Tests\\": "tests"
+        }
+    }
 }
