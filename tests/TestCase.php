@@ -2,59 +2,59 @@
 
 namespace Emeefe\Subscriptions\Tests;
 
-use Illuminate\Foundation\Auth\User;
+use Emeefe\Subscriptions\Tests\Models\User;
 use Illuminate\Database\Schema\Blueprint;
-use BeyondCode\Comments\CommentsServiceProvider;
+use Emeefe\Subscriptions\SubscriptionsServiceProvider;
+use Illuminate\Foundation\Testing\WithFaker;
 
 abstract class TestCase extends \Orchestra\Testbench\TestCase
 {
+    use WithFaker;
 
     public function setUp(): void
     {
         parent::setUp();
-        $this->loadLaravelMigrations(['--database' => 'sqlite']);
         $this->setUpDatabase();
-        $this->createUser();
     }
 
+    private function setUpDatabase(): void
+    {
+        $this->loadMigrationsFrom([
+            '--database' => 'testing',
+            '--realpath' => realpath(__DIR__ . '/resources/database/migrations'),
+        ]);
+
+        //TODO INICIAR MIGRACIONES
+
+        //include_once __DIR__ . '/../database/migrations/create_comments_table.php.stub';
+
+        //(new \CreateCommentsTable)->up();
+    }
+
+    /**
+     * Documented in https://github.com/orchestral/testbench/tree/v3.8.5#custom-service-provider
+     */
     protected function getPackageProviders($app)
     {
         return [
-            CommentsServiceProvider::class,
+            SubscriptionsServiceProvider::class,
         ];
     }
 
     protected function getEnvironmentSetUp($app)
     {
-        $app['config']->set('auth.providers.users.model', User::class);
-        $app['config']->set('database.default', 'sqlite');
-        $app['config']->set('database.connections.sqlite', [
-            'driver' => 'sqlite',
+        $app['config']->set('database.default', 'testing');
+        $app['config']->set('database.connections.testing', [
+            'driver'   => 'sqlite',
             'database' => ':memory:',
-            'prefix' => '',
+            'prefix'   => '',
         ]);
-        $app['config']->set('app.key', 'base64:6Cu/ozj4gPtIjmXjr8EdVnGFNsdRqZfHfVjQkmTlg4Y=');
     }
 
-    protected function setUpDatabase()
+    protected function createUser(): User
     {
-        include_once __DIR__ . '/../database/migrations/create_comments_table.php.stub';
-
-        (new \CreateCommentsTable())->up();
-
-        $this->app['db']->connection()->getSchemaBuilder()->create('posts', function (Blueprint $table) {
-            $table->increments('id');
-            $table->string('title');
-            $table->timestamps();
-        });
-    }
-
-    protected function createUser()
-    {
-        User::forceCreate([
-            'name' => 'User',
-            'email' => 'user@email.com',
-            'password' => 'test'
+        return User::create([
+            'name' => $this->faker->name,
         ]);
     }
 
