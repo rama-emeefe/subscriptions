@@ -24,11 +24,10 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
             '--realpath' => realpath(__DIR__ . '/resources/database/migrations'),
         ]);
 
-        //TODO INICIAR MIGRACIONES
-
-        //include_once __DIR__ . '/../database/migrations/create_comments_table.php.stub';
-
-        //(new \CreateCommentsTable)->up();
+        $this->loadMigrationsFrom([
+            '--database' => 'testing',
+            '--realpath' => realpath(__DIR__ . '/../database/migrations'),
+        ]);
     }
 
     /**

@@ -48,6 +48,8 @@ interface PlanInterface{
      * Get the limit of a feature with limit, if the feature 
      * has no limit or does not exist within the type of 
      * the plan returns -1.
+     * 
+     * @return int
      */
     public function getFeatureLimitByCode();
 
