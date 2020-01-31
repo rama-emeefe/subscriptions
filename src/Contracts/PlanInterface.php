@@ -18,6 +18,21 @@ interface PlanInterface{
     public function features();
 
     /**
+     * Scope plans by type
+     */
+    public function scopeByType($query, string $type);
+
+    /**
+     * Scope visible plans
+     */
+    public function scopeVisible($query);
+
+    /**
+     * Scope hidden plans
+     */
+    public function scopeHidden($query);
+
+    /**
      * Assign the feature limit through the feature code 
      * validating that the feature is of the type limit, 
      * exists and a positive number greater than zero is 
