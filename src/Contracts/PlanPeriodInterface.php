@@ -2,10 +2,27 @@
 
 namespace Emeefe\Subscriptions\Contracts;
 
-use Emeefe\Subscriptions\PlanFeature;
-use Emeefe\Subscriptions\PlanType;
+interface PlanPeriodInterface{
 
-interface PlanTypeInterface{
+    /**
+     * The plan relationship
+     */
+    public function plan();
+
+    /**
+     * The subscriptions relationship
+     */
+    public function subscriptions();
+
+    /**
+     * Scope visible periods plan
+     */
+    public function scopeVisible($query);
+
+    /**
+     * Scope hidden periods plan
+     */
+    public function scopeHidden($query);
 
     /**
      * Check if the plan period is recurring

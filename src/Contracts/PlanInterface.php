@@ -13,7 +13,7 @@ interface PlanInterface{
     public function type();
 
     /**
-     * The features relationship
+     * The features relationship throught
      */
     public function features();
 

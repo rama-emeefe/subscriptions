@@ -315,6 +315,40 @@ Devuelve:
 - `true`: Cuando el feature existe en el tipo del plan
 - `false`: Cuando el feature no existe en el tipo del plan
 
+## Relaciones
+
+**type**
+
+Obtiene la el tipo de plan al que se encuentra asociado el plan.
+
+---
+
+**features**
+
+Obtiene la colección de features asociados al plan a través de su tipo
+
+
+## Scopes
+
+**scopeByType($query, string $type)**
+
+Obtiene planes según la clave de su tipo.
+
+- `$type`: Clave del tipo de plan
+
+---
+
+**scopeVisible($query)**
+
+Filtra planes visibles
+
+---
+
+**scopeHidden($query)**
+
+Filtra planes ocultos
+
+
 
 ## Subscriptions
 
