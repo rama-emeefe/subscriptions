@@ -4,6 +4,7 @@ namespace Emeefe\Subscriptions\Contracts;
 
 use Emeefe\Subscriptions\PlanFeature;
 use Emeefe\Subscriptions\PlanType;
+use Emeefe\Subscriptions\Plan;
 
 interface PlanTypeInterface{
 
@@ -11,6 +12,11 @@ interface PlanTypeInterface{
      * The features relationship
      */
     public function features();
+
+    /**
+     * The plans relationship
+     */
+    public function plans();
 
     /**
      * Attach a PlanFeature model and return
@@ -38,4 +44,12 @@ interface PlanTypeInterface{
      * @return PlanFeature
      */
     public function getFeatureByCode(string $featureCode);
+
+    /**
+     * Get the default plan on plan type, if the default 
+     * plan does not exist then it returns null
+     * 
+     * @return Plan
+     */
+    public function getDefaultPlan();
 }

@@ -13,9 +13,24 @@ interface PlanInterface{
     public function type();
 
     /**
-     * The features relationship
+     * The features relationship throught
      */
     public function features();
+
+    /**
+     * Scope plans by type
+     */
+    public function scopeByType($query, string $type);
+
+    /**
+     * Scope visible plans
+     */
+    public function scopeVisible($query);
+
+    /**
+     * Scope hidden plans
+     */
+    public function scopeHidden($query);
 
     /**
      * Assign the feature limit through the feature code 
@@ -33,6 +48,8 @@ interface PlanInterface{
      * Get the limit of a feature with limit, if the feature 
      * has no limit or does not exist within the type of 
      * the plan returns -1.
+     * 
+     * @return int
      */
     public function getFeatureLimitByCode();
 
