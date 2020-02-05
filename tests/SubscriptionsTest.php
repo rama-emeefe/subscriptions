@@ -4,13 +4,12 @@ namespace Emeefe\Subscriptions\Tests;
 
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use App\User;
 use Subscriptions;
 use Emeefe\Subscriptions\Models\PlanFeature;
 use Emeefe\Subscriptions\Models\PlanType;
 use Emeefe\Subscriptions\Models\Plan;
 use Emeefe\Subscriptions\Exceptions\RepeatedCodeException;;
-
+use Carbon\Carbon;
 
 class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
 {
@@ -391,7 +390,7 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
     }
 
     /**
-     * Test default period
+     * Test default period, the saving event is tested
      */
     public function test_plan_period_default(){
         $planType = $this->createPlanType();
@@ -414,13 +413,234 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
     }
 
     /**
+     * Test subscription to one type of plan over only one of its periods,
+     * test existence
+     */
+    public function test_unique_not_cancelled_subscription_in_plan_type(){
+        $planType = $this->createPlanType('user_membership');
+        $plan = $this->createPlan('plan', $planType);
+        $periodOne = Subscriptions::period($this->faker->sentence(3), 'period_one', $plan)
+            ->create();
+        $periodTwo = Subscriptions::period($this->faker->sentence(3), 'period_two', $plan)
+            ->create();
+
+        $user = $this->createUser();
+
+        $this->assertTrue($user->subscribeTo($periodOne));
+        $this->assertFalse($user->subscribeTo($periodTwo));
+        $this->assertTrue($user->hasSubscription($planType));
+        $this->assertTrue($user->hasSubscription('user_membership')); //With type as string
+    }
+
+    /**
+     * Test subscription with trial days
+     */
+    public function test_subscription_trial(){
+        Carbon::setTestNow(Carbon::create(2020, 1, 1, 12, 0, 0));
+
+        $planType = $this->createPlanType('user_membership');
+        $plan = $this->createPlan('plan', $planType);
+        $period = Subscriptions::period($this->faker->sentence(3), 'period', $plan)
+            ->setTrialDays(10)
+            ->create();
+
+        $user = $this->createUser();
+        $user->subscribeTo($period);
+        $currentSubscription = $user->currentSubscription($planType);
+
+        $this->asertEquals($user->subscriptions()->byType($planType)->count(), 1);
+        $this->assertNotNull($currentSubscription);
+        $this->assertTrue($currentSubscription->isOnTrial());
+        $this->assertEquals($currentSubscription->remainingTrialDays(), 9);
+
+        Carbon::setTestNow(Carbon::create(2020, 1, 11, 12, 0, 1));
+
+        $this->assertFalse($currentSubscription->isOnTrial());
+        $this->assertEquals($currentSubscription->remainingTrialDays(), 0);
+
+        Carbon::setTestNow();   
+    }
+
+    /**
+     * Test subscription without trial days
+     */
+    public function test_subscription_without_trial(){
+        Carbon::setTestNow(Carbon::create(2020, 1, 1, 12, 0, 0));
+
+        $planType = $this->createPlanType('user_membership');
+        $plan = $this->createPlan('plan', $planType);
+        $period = Subscriptions::period($this->faker->sentence(3), 'period', $plan)
+            ->create();
+
+        $user = $this->createUser();
+        $user->subscribeTo($period);
+        $currentSubscription = $user->currentSubscription($planType);
+
+        $this->assertFalse($currentSubscription->isOnTrial());
+        $this->assertEquals($currentSubscription->remainingTrialDays(), 0);
+
+        Carbon::setTestNow();   
+    }
+
+    /**
+     * Test recurring subscription with trial days and tolerance days
+     * Trial start          -> 2020, 1, 1, 12, 0    3 days
+     * Start                -> 2020, 1, 4, 12, 0    1 Month
+     * Expiration tolerance -> 2020, 2, 4, 12, 0    5 days
+     * End tolerance days   -> 2020, 2, 9, 12, 0    2 Months
+     * Renew                -> 2020, 4, 9, 12, 0
+     */
+    public function test_recurring_subscription_status_trial_and_tolerance(){
+        Carbon::setTestNow(Carbon::create(2020, 1, 1, 12, 0, 0));
+
+        $planType = $this->createPlanType('user_membership');
+        $plan = $this->createPlan('plan', $planType);
+        $period = Subscriptions::period($this->faker->sentence(3), 'period', $plan)
+            ->setRecurringPeriod(1, PlanPeriod::UNIT_MONTH)
+            ->setTrialDays(3)
+            ->setToleranceDays(5)
+            ->create();
+
+        $user = $this->createUser();
+        $user->subscribeTo($period);
+        $currentSubscription = $user->currentSubscription($planType);
+
+        $this->assertTrue($currentSubscription->isOnTrial());
+        $this->assertEquals($currentSubscription->remainingTrialDays(), 2);
+        $this->assertFalse($currentSubscription->isActive());
+        $this->assertTrue($currentSubscription->isValid());
+
+        Carbon::setTestNow(Carbon::create(2020, 1, 4, 12, 0, 1));
+
+        $this->assertFalse($currentSubscription->isOnTrial());
+        $this->assertTrue($currentSubscription->isActive());
+        $this->assertTrue($currentSubscription->isValid());
+        $this->assertFalse($currentSubscription->isExpiredWithTolerance());
+        $this->assertFalse($currentSubscription->isFullExpired());
+
+        Carbon::setTestNow(Carbon::create(2020, 2, 4, 12, 0, 1));
+
+        $this->assertFalse($currentSubscription->isActive());
+        $this->assertTrue($currentSubscription->isValid());
+        $this->assertTrue($currentSubscription->isExpiredWithTolerance());
+        $this->assertFalse($currentSubscription->isFullExpired());
+
+        Carbon::setTestNow(Carbon::create(2020, 2, 9, 12, 0, 1));
+
+        $this->assertFalse($currentSubscription->isActive());
+        $this->assertFalse($currentSubscription->isValid());
+        $this->assertFalse($currentSubscription->isExpiredWithTolerance());
+        $this->assertTrue($currentSubscription->isFullExpired());
+
+        $this->assertTrue($currentSubscription->renew(2));
+
+        $this->assertTrue($currentSubscription->isActive());
+        $this->assertTrue($currentSubscription->isValid());
+        $this->assertFalse($currentSubscription->isExpiredWithTolerance());
+        $this->assertFalse($currentSubscription->isFullExpired());
+
+        Carbon::setTestNow(Carbon::create(2020, 4, 9, 12, 0, 2));
+
+        $this->assertTrue($currentSubscription->cancel('non-payment'));
+        $this->assertTrue($currentSubscription->isCanceled());
+        $this->assertTrue($currentSubscription->isFullExpired());
+
+        //Unable to renew a canceled subscription
+        $this->assertFalse($currentSubscription->renew(2));
+
+        Carbon::setTestNow();
+    }
+
+    /**
+     * Test non recurring limited subscription 
+     * 
+     * Trial start          -> 2020, 1, 1, 12, 0    0 days
+     * Start                -> 2020, 1, 1, 12, 0    12 Months
+     * Expiration tolerance -> 2021, 1, 1, 12, 0    0 days
+     * End tolerance days   -> 2021, 1, 1, 12, 0   
+     */
+    public function test_non_recurring_limited_subscription_status(){
+        Carbon::setTestNow(Carbon::create(2020, 1, 1, 12, 0, 0));
+
+        $planType = $this->createPlanType('user_membership');
+        $plan = $this->createPlan('plan', $planType);
+        $period = Subscriptions::period($this->faker->sentence(3), 'period', $plan)
+            ->setLimitedNonRecurringPeriod(12, PlanPeriod::UNIT_MONTH)
+            ->create();
+
+        $user = $this->createUser();
+        $user->subscribeTo($period);
+        $currentSubscription = $user->currentSubscription($planType);
+
+        $this->assertTrue($currentSubscription->isActive());
+        $this->assertTrue($currentSubscription->isValid());
+
+        Carbon::setTestNow(Carbon::create(2020, 12, 1, 12, 0, 0));
+
+        $this->assertTrue($currentSubscription->isActive());
+        $this->assertTrue($currentSubscription->isValid());
+
+        Carbon::setTestNow(Carbon::create(2021, 1, 1, 12, 0, 0));
+
+        $this->assertFalse($currentSubscription->isActive());
+        $this->assertFalse($currentSubscription->isValid());
+        $this->assertFalse($currentSubscription->isExpiredWithTolerance());
+        $this->assertTrue($currentSubscription->isFullExpired());
+
+        $this->assertFalse($currentSubscription->renew(1));
+
+        Carbon::setTestNow();
+    }
+
+    /**
+     * Test non recurring ilimited subscription 
+     */
+    public function test_non_recurring_ilimited_subscription_status(){
+        Carbon::setTestNow(Carbon::create(2020, 1, 1, 12, 0, 0));
+
+        $planType = $this->createPlanType('user_membership');
+        $plan = $this->createPlan('plan', $planType);
+        $period = Subscriptions::period($this->faker->sentence(3), 'period', $plan)
+            ->setTrial(100) //will be ignored
+            ->setToleranceDays(20) //will be ignored
+            ->create();
+
+        $user = $this->createUser();
+        $user->subscribeTo($period);
+        $currentSubscription = $user->currentSubscription($planType);
+
+        $this->assertTrue($currentSubscription->isActive());
+        $this->assertTrue($currentSubscription->isValid());
+        $this->assertFalse($currentSubscription->isExpiredWithTolerance());
+        $this->assertFalse($currentSubscription->isFullExpired());
+
+        $this->assertFalse($currentSubscription->renew());
+
+        //10 Years later
+        Carbon::setTestNow(Carbon::create(2030, 1, 1, 12, 0, 0));
+
+        $this->assertTrue($currentSubscription->isActive());
+        $this->assertTrue($currentSubscription->isValid());
+
+        $this->assertTrue($currentSubscription->cancel());
+
+        $this->assertFalse($currentSubscription->isActive());
+        $this->assertFalse($currentSubscription->isValid());
+        $this->assertFalse($currentSubscription->isExpiredWithTolerance());
+        $this->assertTrue($currentSubscription->isFullExpired());
+
+        Carbon::setTestNow();
+    }
+
+
+    /**
      * Create a PlanType instance
      * 
      * @return Emeefe\Subscriptions\PlanType
      */
-    public function createPlanType(){
+    public function createPlanType($type = null){
         $planType = new PlanType();
-        $planType->type = $this->faker->word;
+        $planType->type = $type ? :$this->faker->word;
         $planType->description = $this->faker->text();
         $planType->save();
 

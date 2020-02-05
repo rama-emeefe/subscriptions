@@ -17,6 +17,7 @@ interface PlanInterface{
      */
     public function features();
 
+    
     /**
      * Scope plans by type
      */
