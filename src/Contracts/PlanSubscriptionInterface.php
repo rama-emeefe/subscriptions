@@ -102,4 +102,49 @@ interface PlanSubscriptionInterface{
     public function cancel(string $reason = null);
 
     
+
+
+
+
+    /**
+     * Check if a feature is reacted with the subscription
+     * 
+     * @param string $featureCode
+     * @return bool
+     */
+    public function hasFeature(string $featureCode);
+
+    /**
+     * Consume units of a feature of the limit type
+     * 
+     * @param string $featureCode
+     * @param int    $units
+     * @return bool
+     */
+    public function consumeFeature(string $featureCode, int $units = 1);
+
+    /**
+     * Unconsume units of a feature of the limit type
+     * 
+     * @param string $featureCode
+     * @param int    $units
+     * @return bool
+     */
+    public function unconsumeFeature(string $featureCode, int $units = 1);
+
+    /**
+     * Returns the usage of a feature
+     * 
+     * @param string $featureCode
+     * @return int
+     */
+    public function getUsageOf(string $featureCode);
+
+    /**
+     * Returns the remaining of a feature
+     * 
+     * @param string $featureCode
+     * @return int
+     */
+    public function getRemainingOf(string $featureCode);
 }

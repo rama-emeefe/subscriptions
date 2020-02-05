@@ -13,14 +13,14 @@ Las caracteristicas de plan, como su nombre lo dice, permiten definir caracterí
 - Una característica puede estar ligada a uno o varios tipos de plan permitiendo casos en los que distintos tipos de plan comparten una misma caracteristica.
 
 ### Planes (Plan)
-Un plan pertenece a un tipo de plan y este puede tener asociados los límites de las características del tipo de plan, siempre y cuando sean carcateristicas contables(`limit`).
+Un plan pertenece a un tipo de plan y este puede tener asociados los límites de las características del tipo de plan(a través de relaciones), siempre y cuando sean carcateristicas contables(`limit`).
 
-- Plan default: Un plan default es el plan que se obtiene por defecto al suscribir a un usuario u otra instancia, solo puede existir un plan default.
+- Plan default: Un plan default es el plan que se obtiene por defecto al suscribir a un usuario u otra instancia, solo puede existir un plan default dentro de un mismo tipo de plan.
 - Un plan pertenece solo a un tipo de plan
 - Un plan puede ser `visible` o `hidden` (oculto)
 
 ### Periodos de plan (PlanPeriod)
-Un periodo de plan indica el tiempo que dura un ciclo, los usuarios o instancias se suscriben directamente al periodo y no al plan dado que os periodos pueden variar en tiempo.
+Un periodo de plan indica el tiempo que dura un ciclo, los usuarios o instancias se suscriben directamente al periodo y no al plan dado que los periodos pueden variar en tiempo.
 
 - Un periodo puede tener un costo o ser gratuito
 - Un periodo pertenece a un solo plan
@@ -30,16 +30,22 @@ Un periodo de plan indica el tiempo que dura un ciclo, los usuarios o instancias
     - Puede ser no recurrente: No puede renovarse
         - Puede ser limitado: Tiene definido una unidad de tiempo como Día, Mes y Año además de la cantidad de unidades de tiempo, por ejemplo **5 días**, **6 meses**, **1 año**, pasado este periodo no se vuelve a repetir, termina la suscripción. (`limited`)
         - Puede ser ilimitado: Puede no tener definido una unidad de tiempo ni cantidad de unidades, en otras palabras, **nunca caduca**. (`unlimited`)
-- Un plan puede tener visibilidad pública o privada
+- Un plan puede tener visibilidad `visible` o `hidden`
 - Puede tener días de tolerancia para renovación.
+- Puede haber solo un periodo default dento del mismo plan.
 
-### Subscripción
+### Subscripción (PlanSubscription)
 Una subscripción es una relación creada entre un usuario u otra instancia con un plan a través de un periodo, la suscripción obtiene informacion actual del plan y del periodo y la mantiene en la suscripción, parecido a crear una copia, para evitar efectos colaterales cuando cambian datos del plan, precios, etc. pudiendo definir el comportamiento cuando ocurren estas situaciones a través de la escucha de eventos.
 
 Cuando se crea una suscripción, esta se vuelve independiente del plan y del periodo aunque es posible obtener las relaciones a dichos modelos para obtener información actualizada u otras acciones necesarias.
 
 - La suscripción trabaja con relaciones polimórficas pudiendo tener relaciones con cualquier modelo y no solo con el de usuario.
 - Mantiene la información del plan y periodo en el momento en el que se crea.
+    - Días de tolerancia
+    - Precio
+    - Moneda
+    - Periodo de recurrencia
+    - Límites de features
 - **Un modelo puede suscribirse solo a un periodo de plan dentro del mismo tipo** por lo que para suscribirse a un nuevo periodo del mismo tipo de plan se debe cancelar primero dicha suscripción existente. En otras palabras, solo puede existir cero o una suscripción no cancelada relacionada con el modelo.
 - Dependiendo el periodo al que se suscribe, la suscripción puede variar en duración
     - Puede ser recurrente: Cada cierto tiempo debe renovarse(`recurring`)
@@ -56,6 +62,14 @@ Cuando se crea una suscripción, esta se vuelve independiente del plan y del per
     - **Suscripción válida**: Suscripción que no ha expirado y no ha pasado de sus días de tolerancia, todas las suscripciones con estatus `Suscripción en periodo de prueba`,`Suscripción activa` o `Suscripción expirada en rango de tolerancia` son suscripciones válidas.
     - **Suscripción ilimitada**: Suscripción que nunca termina
     - **Suscripción limitada**: Suscripción que tiene una fecha de expiración.
+
+![Status](docs/images/SubscriptionsStatus.png)
+
+---
+
+![Periods](docs/images/SubscriptionsPeriods.png)
+
+---
 
 ## Creación de tipo de plan
 La creación de un tipo de plan se realiza a través de su modelo `PlanType` de la siguiente manera:
@@ -319,6 +333,12 @@ if($subscription->cancel()){
 }else{
     echo "La suscripción ya ha sido cancelada";
 }
+```
+
+### Verificar features de suscripción
+Una vez que existe una suscripción a un periodo se puede verificar la existencia de features así como la cantidad de restantes.
+
+```php
 ```
 
 # Modelos
@@ -600,6 +620,64 @@ Cancela la suscripción solo si esta no ya está cancelada. Si se cancela una su
 
 - `$reason`: Razón por la cuál se cancela la suscripción.
 
+Devuelve `bool`
+
+#### `hasFeature(string $featureCode)`
+
+Checa si la suscripción tiene un feature a partir de su código.
+
+- `$featureCode`: Código del feature
+
+Devuelve `bool`
+
+#### `consumeFeature(string $featureCode, int $units = 1)`
+
+Consume una unidad de las unidades disponibles en la suscripción de un feature.
+
+- `$featureCode`: Código del feature
+- `$units`: Unidades a consumir, por default `1`
+
+Devuelve `bool`
+
+- `true`: Si se puede consumir
+- `false`: Si no se puede consumir debido a que ya llegó al límite o las unidades a consumir son mayores a las disponibles.
+
+#### `unconsumeFeature(string $featureCode, int $units = 1)`
+
+Desconsume una unidad de las unidades consumidas en la suscripción de un feature.
+
+- `$featureCode`: Código del feature
+- `$units`: Unidades a desconsumir, por default `1`
+
+Devuelve `bool`
+
+- `true`: Si se puede desconsumir
+- `false`: Si no se puede desconsumir debido a que la cantidad de unidades consumidas es `0`
+
+
+#### `getUsageOf(string $featureCode)`
+
+Devuelve el uso de un feature relacionado a la suscripción
+
+- `$featureCode`: Código del feature
+
+Devuelve `int` o `null`
+
+- `int`: Si se puede obtener el uso
+- `null`: Si el feature no está relacionado o no es del tipo `limit`
+
+#### `getRemainingOf(string $featureCode)`
+
+Devuelve el uso restante de un feature relacionado a la suscripción
+
+- `$featureCode`: Código del feature
+
+Devuelve `int` o `null`
+
+- `int`: Si se puede obtener el uso restante
+- `null`: Si el feature no está relacionado o no es del tipo `limit`
+
+
 ## Relaciones
 
 #### `period`
@@ -631,3 +709,7 @@ Filtra suscripciones gratuitas donde su campo `price` es `0`
 #### `recurring($query)`
 
 Filtra suscripciones recurrentes
+
+# Eventos
+
+**QUEDA PENDIENTE**
