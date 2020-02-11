@@ -14,8 +14,9 @@ class CreatePlanTypesTable extends Migration
     public function up()
     {
         Schema::create('plan_types', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->timestamps();
+            $table->increments('id');
+            $table->char('type', 100)->unique();
+            $table->string('description');
         });
     }
 

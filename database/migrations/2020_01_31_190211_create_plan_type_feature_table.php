@@ -14,8 +14,10 @@ class CreatePlanTypeFeatureTable extends Migration
     public function up()
     {
         Schema::create('plan_type_feature', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->timestamps();
+            $table->unsignedInteger('type_id');
+            $table->foreign('type_id')->references('id')->on('plan_types');
+            $table->unsignedInteger('feature_id');
+            $table->foreign('feature_id')->references('id')->on('plan_features');
         });
     }
 

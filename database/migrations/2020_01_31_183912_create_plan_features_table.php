@@ -14,7 +14,12 @@ class CreatePlanFeaturesTable extends Migration
     public function up()
     {
         Schema::create('plan_features', function (Blueprint $table) {
-            $table->bigIncrements('id');
+            $table->increments('id');
+            $table->char('display_name', 100);
+            $table->string('code', 100);
+            $table->string('description')->nullable();
+            $table->enum('type', ['feature','limit'])->default('feature');
+            $table->string('metadata')->nullable();
             $table->timestamps();
         });
     }

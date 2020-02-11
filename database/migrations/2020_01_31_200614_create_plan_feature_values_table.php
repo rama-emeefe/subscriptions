@@ -14,8 +14,11 @@ class CreatePlanFeatureValuesTable extends Migration
     public function up()
     {
         Schema::create('plan_feature_values', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->timestamps();
+            $table->unsignedInteger('plan_id');
+            $table->foreign('plan_id')->references('id')->on('plans');
+            $table->unsignedInteger('plan_feature_id');
+            $table->foreign('plan_feature_id')->references('id')->on('plan_features');
+            $table->unsignedInteger('limit')->default(1);
         });
     }
 

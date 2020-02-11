@@ -9,7 +9,7 @@ use Subscriptions;
 use Emeefe\Subscriptions\Models\PlanFeature;
 use Emeefe\Subscriptions\Models\PlanType;
 use Emeefe\Subscriptions\Models\Plan;
-use Emeefe\Subscriptions\Exceptions\RepeatedCodeException;;
+use Emeefe\Subscriptions\Exceptions\RepeatedCodeException;
 
 
 class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
