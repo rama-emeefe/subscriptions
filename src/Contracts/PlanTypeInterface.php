@@ -19,6 +19,13 @@ interface PlanTypeInterface{
     public function plans();
 
     /**
+     * The subscriptions relationship
+     */
+    public function subscriptions();
+
+
+
+    /**
      * Attach a PlanFeature model and return
      * the PlanType instance
      * 
