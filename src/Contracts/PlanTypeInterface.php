@@ -2,9 +2,9 @@
 
 namespace Emeefe\Subscriptions\Contracts;
 
-use Emeefe\Subscriptions\PlanFeature;
-use Emeefe\Subscriptions\PlanType;
-use Emeefe\Subscriptions\Plan;
+use Emeefe\Subscriptions\Models\PlanFeature;
+use Emeefe\Subscriptions\Models\PlanType;
+use Emeefe\Subscriptions\Models\Plan;
 
 interface PlanTypeInterface{
 

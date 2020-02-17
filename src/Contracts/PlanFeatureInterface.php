@@ -3,7 +3,6 @@
 namespace Emeefe\Subscriptions\Contracts;
 
 interface PlanFeatureInterface{
-
     /**
      * Scope by limit type
      */

@@ -6,10 +6,18 @@ use Emeefe\Subscriptions\Tests\Models\User;
 use Illuminate\Database\Schema\Blueprint;
 use Emeefe\Subscriptions\SubscriptionsServiceProvider;
 use Illuminate\Foundation\Testing\WithFaker;
+use \Illuminate\Database\SQLiteConnection;  
+use \Illuminate\Database\Schema\SQLiteBuilder;
+use \Illuminate\Support\Fluent; 
 
 abstract class TestCase extends \Orchestra\Testbench\TestCase
 {
     use WithFaker;
+
+    public function __construct(){
+        parent::__construct();
+        $this->hotfixSqlite();
+    }
 
     public function setUp(): void
     {
@@ -55,6 +63,31 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
         return User::create([
             'name' => $this->faker->name,
         ]);
+    }
+
+    public function hotfixSqlite()
+    {
+        \Illuminate\Database\Connection::resolverFor('sqlite', function ($connection, $database, $prefix, $config) {
+            return new class($connection, $database, $prefix, $config) extends SQLiteConnection {
+                public function getSchemaBuilder()
+                {
+                    if ($this->schemaGrammar === null) {
+                        $this->useDefaultSchemaGrammar();
+                    }
+                    return new class($this) extends SQLiteBuilder {
+                        protected function createBlueprint($table, \Closure $callback = null)
+                        {
+                            return new class($table, $callback) extends Blueprint {
+                                public function dropForeign($index)
+                                {
+                                    return new Fluent();
+                                }
+                            };
+                        }
+                    };
+                }
+            };
+        });
     }
 
 }
