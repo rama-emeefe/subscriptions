@@ -63,4 +63,46 @@ interface PlanInterface{
      * @return boolean
      */
     public function hasFeature(string $featureCode);
+
+    /**
+     * Check if the plan is visible
+     * 
+     * @return bool
+     */
+    public function isVisible();
+
+    /**
+     * Check if the plan is hidden
+     * 
+     * @return bool
+     */
+    public function isHidden();
+
+    /**
+     * Check if the plan is default in plan type
+     * 
+     * @return bool
+     */
+    public function isDefault();
+
+    /**
+     * Define the plan as visible
+     * 
+     * @return bool
+     */
+    public function setAsVisible();
+
+    /**
+     * Define the plan as hidden
+     * 
+     * @return bool
+     */
+    public function setAsHidden();
+
+    /**
+     * Define the plan as default
+     * 
+     * @return bool
+     */
+    public function setAsDefault();
 }

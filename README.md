@@ -309,6 +309,17 @@ if($user->hasSubscription('user_membership')){
 }
 ```
 
+### Obtener suscripción
+Para obtener la suscripción actual se usa el método `currentSubscription(PlanType $planType)`, la suscripción actual es la última suscripción creada sobre el modelo que se suscribe, aunque la suscripción esté cancelada será devuelta por este método.
+
+```php
+if($user->currentSubscription($planType)){
+    echo "El usuario tiene una suscripción";
+}else{
+    echo "El usuario no tiene una suscripción";
+}
+```
+
 ### Renovar suscripción
 Cuando una suscripción es recurrente esta puede ser renovada por un numero entero de periodos. Una suscripción no recurrente no puede ser renovada.
 
@@ -425,6 +436,24 @@ Devuelve:
 
 - `true`: Cuando el feature existe en el tipo del plan
 - `false`: Cuando el feature no existe en el tipo del plan
+
+#### `setAsDefault()`
+
+Define el plan como default dentro del tipo plan, si ya existia un plan que era el default entonces se reasigna esta característica actualizando el nuevo y quitando la característica al antiguo default.
+
+Devuelve `bool`
+
+#### `setAsVisible()`
+
+Define el plan como visible
+
+Devuelve `bool`
+
+#### `setAsHidden()`
+
+Define el plan como oculto
+
+Devuelve `bool`
 
 ## Relaciones
 
