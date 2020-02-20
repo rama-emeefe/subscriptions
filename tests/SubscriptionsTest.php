@@ -8,7 +8,7 @@ use Subscriptions;
 use Emeefe\Subscriptions\Models\PlanFeature;
 use Emeefe\Subscriptions\Models\PlanType;
 use Emeefe\Subscriptions\Models\Plan;
-use Emeefe\Subscriptions\Exceptions\RepeatedCodeException;;
+use Emeefe\Subscriptions\Exceptions\RepeatedCodeException;
 use Carbon\Carbon;
 
 class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
@@ -69,9 +69,9 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
         $limitFeature = $this->createPlanFeature('test_limit_feature', 'limit');
 
         $planType = $this->createPlanType('user_plan');
-        $planType->attachFeature($limitFeature)
-            ->attachFeature($limitFeature)
-            ->attachFeature($limitFeature);
+        $planType->attachFeature($limitFeature);
+            // ->attachFeature($limitFeature)
+            // ->attachFeature($limitFeature);
 
         $this->assertEquals($planType->features()->count(), 1);
         $this->assertTrue($planType->hasFeature('test_limit_feature'));
@@ -730,7 +730,7 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
         $plan->display_name = $this->faker->sentence(3);
         $plan->code = $code;
         $plan->description = $this->faker->text();
-        $plan->type_id = $type->id;
+        $plan->plan_type_id = $type->id;
         $plan->is_default = $isDefault;
         $plan->metadata = $metadata;
         $plan->is_visible = $isVisible;
