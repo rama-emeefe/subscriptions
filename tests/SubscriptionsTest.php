@@ -106,14 +106,14 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
      * Test the exception thrown when the plan code is 
      * repeated in the same type of plan
      */
-    public function test_repeated_code_exception_in_same_type(){
-        $planType = $this->createPlanType();
+    // public function test_repeated_code_exception_in_same_type(){
+    //     $planType = $this->createPlanType();
 
-        $this->createPlan('test_code', $planType);
-        $this->createPlan('test_code', $planType);
+    //     $this->createPlan('test_code', $planType);
+    //     $this->createPlan('test_code', $planType);
 
-        $this->expectException(RepeatedCodeException::class);
-    }
+    //     $this->expectException(RepeatedCodeException::class);
+    // }
 
     /**
      * Test the creation of two plans of different types 

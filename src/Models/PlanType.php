@@ -11,7 +11,7 @@ class PlanType extends Model implements PlanTypeInterface{
         return $this->belongsToMany(PlanFeature::class, 'plan_type_fetaure', 'type_id', 'feature_id');
     }
     public function plans(){
-        return $this->hasMany(Plan::class);
+        return $this->hasMany(Plan::class, 'plan_type_id');
     }
     public function subscriptions(){
 
@@ -30,10 +30,7 @@ class PlanType extends Model implements PlanTypeInterface{
         return PlanFeature::where('code', $featureCode)->get()->first();
     }
     public function getDefaultPlan(){
-        $is_default = $this->plans()->first()->is_default;
-        if ( $is_default ) {
-            return $this->plans()->first();
-        }
-        return null;
+        $default_plan = $this->plans()->where('is_default',1)->first();
+        return $default_plan;
     }
 }
