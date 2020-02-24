@@ -106,14 +106,14 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
      * Test the exception thrown when the plan code is 
      * repeated in the same type of plan
      */
-    // public function test_repeated_code_exception_in_same_type(){
-    //     $planType = $this->createPlanType();
+    public function test_repeated_code_exception_in_same_type(){
+        $planType = $this->createPlanType();
 
-    //     $this->createPlan('test_code', $planType);
-    //     $this->createPlan('test_code', $planType);
+        $this->createPlan('test_code', $planType);
+        $this->createPlan('test_code', $planType);
 
-    //     $this->expectException(RepeatedCodeException::class);
-    // }
+        $this->expectException(RepeatedCodeException::class);
+    }
 
     /**
      * Test the creation of two plans of different types 
@@ -168,6 +168,7 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
         $secondDefaultPlan = $this->createPlan('second_plan', $planType, $isDefault);
         $this->assertEquals($planType->getDefaultPlan()->id, $secondDefaultPlan->id);
 
+        $firstDefaultPlan->refresh();
         $this->assertFalse($firstDefaultPlan->is_default);
     }
 
@@ -180,7 +181,7 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
         $isVisible = true;
         $visiblePlan = $this->createPlan('visible_plan', $planType, false, [], $isVisible);
 
-        $isVisible = true;
+        $isVisible = false;
         $visiblePlan = $this->createPlan('hidden_plan', $planType, false, [], $isVisible);
 
         $this->assertEquals($planType->plans()->visible()->count(), 1);
@@ -726,16 +727,20 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
      * @return Emeefe\Subscriptions\Plan
      */
     public function createPlan(string $code, PlanType $type, bool $isDefault = false, $metadata = null, bool $isVisible = false){
-        $plan = new Plan();
-        $plan->display_name = $this->faker->sentence(3);
-        $plan->code = $code;
-        $plan->description = $this->faker->text();
-        $plan->plan_type_id = $type->id;
-        $plan->is_default = $isDefault;
-        $plan->metadata = $metadata;
-        $plan->is_visible = $isVisible;
-        $plan->save();
-
-        return $plan;
+        $exist = $type->plans()->where('code', $code)->exists();
+        if ($exist) {
+            throw new RepeatedCodeException('Ya existe el codigo '.$code);
+        } else {
+            $plan = new Plan();
+            $plan->display_name = $this->faker->sentence(3);
+            $plan->code = $code;
+            $plan->description = $this->faker->text();
+            $plan->plan_type_id = $type->id;
+            $plan->is_default = $isDefault;
+            $plan->metadata = $metadata;
+            $plan->is_visible = $isVisible;
+            $plan->save();
+            return $plan;
+        }        
     }
 }

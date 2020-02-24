@@ -15,10 +15,13 @@ class PlanObserver
     {
         // dd('From PlanObserver', $plan);
         // \Log::info(print_r($plan, true));
-        $count = $plan->type->plans()->where('is_default', 1)->count();
-        if($count == 1){
-            dd('From PlanObserver', $plan->type->plans()->where('is_default', 1)->get()->first());
-            
+        if($plan->isDefault()) {
+            $oldDefaultPlan = $plan->type->plans()->where('is_default', 1)->first();
+            if($oldDefaultPlan){
+                $oldDefaultPlan->is_default = false;
+                $oldDefaultPlan->save();
+                // dd('old plan default', $oldPlan->isDefault());
+            }
         }
     }
 

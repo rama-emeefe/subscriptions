@@ -8,8 +8,10 @@ use Emeefe\Subscriptions\Contracts\PlanInterface;
 class Plan extends Model implements PlanInterface{
 
     protected $casts = [
-        'metadata' => 'array'
+        'metadata' => 'array',
+        'is_default' => 'boolean'
     ];
+
     public function type(){
         return $this->belongsTo(PlanType::class, 'plan_type_id');
     }
@@ -23,14 +25,14 @@ class Plan extends Model implements PlanInterface{
     }
 
     public function scopeVisible($query){
-
+        return $query->where('is_visible',1);
     }
 
     public function scopeHidden($query){
-
+        return $query->where('is_visible',0);
     }
 
-    public function assignFeatureLimitByCode(int $limit, string $featureCode){
+    public function assignFeatureLimitByCode(string $featureCode, int $limit){
 
     }
 
@@ -43,37 +45,39 @@ class Plan extends Model implements PlanInterface{
     }
 
     public function isVisible() {
-
+        if($this->is_visible) {
+            return true;
+        }
+        return false;
     }
 
     public function isHidden() {
-
+        if($this->is_visible) {
+            return false;
+        }
+        return true;
     }
 
     public function isDefault() {
-
+        if($this->is_default) {
+            return true;
+        }
+        return false;
     }
 
     public function setAsVisible() {
-
+        $this->is_visible = true;
+        $this->save();
     }
 
     public function setAsHidden() {
-
+        $this->is_visible = false;
+        $this->save();
     }
 
     public function setAsDefault() {
-        
+        $this->is_default = true;
+        $this->save();
     }
 
-    // public static function boot() {
-    //     static::saving(function($plan){
-    //         $count = $this->type->plans()->where('is_default', 1)->count();
-    //         if($count == 0) {
-    //             //TODO Asignar el valor de is_default
-    //         } else {
-    //             //TODO eliminar el que estaba por defecto y poner al nuevo el is_default
-    //         }
-    //     });
-    // }
 }

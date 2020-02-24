@@ -43,7 +43,7 @@ interface PlanInterface{
      * @param string $featureCode
      * @return boolean
      */
-    public function assignFeatureLimitByCode(int $limit, string $featureCode);
+    public function assignFeatureLimitByCode(string $featureCode, int $limit);
 
     /**
      * Get the limit of a feature with limit, if the feature 
