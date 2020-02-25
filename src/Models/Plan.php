@@ -17,11 +17,11 @@ class Plan extends Model implements PlanInterface{
     }
 
     public function features(){
-
+        return $this->belongsToMany(PlanFeature::class, 'plan_feature_values', 'plan_id', 'plan_feature_id')->withPivot('limit');
     }
 
     public function scopeByType($query, string $type){
-
+        return $query->where('plan_type_id', $type);
     }
 
     public function scopeVisible($query){
@@ -33,11 +33,18 @@ class Plan extends Model implements PlanInterface{
     }
 
     public function assignFeatureLimitByCode(string $featureCode, int $limit){
-
+        $feature = $this->type->features()->limitType()->where('code', $featureCode)->first();
+        if($feature) {
+            if($limit >= 1) {
+                $this->features()->attach($feature->id, ['limit' => $limit]);
+                return true;
+            }
+        }
+        return false;
     }
 
     public function getFeatureLimitByCode() {
-
+        
     }
 
     public function hasFeature(string $featureCode){

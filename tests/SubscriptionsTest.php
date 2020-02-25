@@ -204,7 +204,7 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
             ->attachFeature($premiumFeature);
 
         $plan = $this->createPlan('test_plan', $planType);
-
+        $plan->refresh();
         $this->assertFalse($plan->assignFeatureLimitByCode('images_feature', -2));
         $this->assertFalse($plan->assignFeatureLimitByCode('images_feature', 0));
         $this->assertTrue($plan->assignFeatureLimitByCode('images_feature', 10));

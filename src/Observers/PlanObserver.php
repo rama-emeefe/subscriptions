@@ -13,14 +13,11 @@ class PlanObserver
      */
     public function saving(Plan $plan)
     {
-        // dd('From PlanObserver', $plan);
-        // \Log::info(print_r($plan, true));
         if($plan->isDefault()) {
             $oldDefaultPlan = $plan->type->plans()->where('is_default', 1)->first();
             if($oldDefaultPlan){
                 $oldDefaultPlan->is_default = false;
                 $oldDefaultPlan->save();
-                // dd('old plan default', $oldPlan->isDefault());
             }
         }
     }
