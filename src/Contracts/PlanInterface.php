@@ -52,7 +52,7 @@ interface PlanInterface{
      * 
      * @return int
      */
-    public function getFeatureLimitByCode();
+    public function getFeatureLimitByCode(string $featureCode);
 
     /**
      * TODO La funcionalidad es un alias de $this->type->hasFeature

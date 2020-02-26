@@ -32,23 +32,43 @@ class Plan extends Model implements PlanInterface{
         return $query->where('is_visible',0);
     }
 
-    public function assignFeatureLimitByCode(string $featureCode, int $limit){
+    public function assignFeatureLimitByCode(string $featureCode, int $limit = 0){
         $feature = $this->type->features()->limitType()->where('code', $featureCode)->first();
         if($feature) {
             if($limit >= 1) {
-                $this->features()->attach($feature->id, ['limit' => $limit]);
-                return true;
+                if($this->hasFeature($featureCode)){
+                    $existenFeature = $this->features()->limitType()->where('code', $featureCode)->first()->pivot;
+                    $existenFeature->limit = $limit;
+                    $existenFeature->save();
+                    return true;
+                } else {
+                    $this->features()->attach($feature->id, ['limit' => $limit]);
+                    return true;
+                }
             }
         }
         return false;
     }
 
-    public function getFeatureLimitByCode() {
-        
+    public function getFeatureLimitByCode($featureCode) {
+        if($this->hasFeature($featureCode)) {
+            $limit = $this->features()->limitType()->where('code', $featureCode)->first();
+            if($limit) {
+                return $limit->pivot->limit;
+            } else {
+                return -1;
+            }
+        }
+        //TODO verificar que el plan tenga el feature del tipo limit pero a traves de su type
+        return -1;
     }
 
     public function hasFeature(string $featureCode){
-
+        $feature = $this->features()->where('code', $featureCode)->first();
+        if($feature) {
+            return true;
+        }
+        return false;
     }
 
     public function isVisible() {

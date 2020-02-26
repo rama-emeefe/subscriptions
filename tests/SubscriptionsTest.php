@@ -213,6 +213,7 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
         
         $this->assertEquals($plan->getFeatureLimitByCode('images_feature'), 10);
         $this->assertTrue($plan->assignFeatureLimitByCode('images_feature', 15));
+        $plan->refresh();
         $this->assertEquals($plan->getFeatureLimitByCode('images_feature'), 15);
 
         $this->assertEquals($plan->getFeatureLimitByCode('premium_feature'), -1);
