@@ -424,7 +424,7 @@ Devuelve:
 
 - int mayor a 0: Cuando el feature existe en el tipo de plan y tiene límite registrado
 - `0`: Cuando el feature existe en el tipo de plan pero no tiene límite asignado
-- `-1`: Cuando el feature no existe en el tipo de plan
+- `-1`: Cuando el feature no existe en el tipo de plan o existe pero no es del tipo `limit`
 
 #### `hasFeature(string $featureCode)`
 

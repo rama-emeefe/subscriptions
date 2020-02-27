@@ -214,11 +214,11 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
         $this->assertEquals($plan->getFeatureLimitByCode('images_feature'), 10);
         $this->assertTrue($plan->assignFeatureLimitByCode('images_feature', 15));
         $plan->refresh();
+        
         $this->assertEquals($plan->getFeatureLimitByCode('images_feature'), 15);
-
         $this->assertEquals($plan->getFeatureLimitByCode('premium_feature'), -1);
         $this->assertEquals($plan->getFeatureLimitByCode('inexistent_feature'), -1);
-        $this->assertEquals($plan->getFeatureLimitByCode('mb_storage'), 0);
+        $this->assertEquals($plan->getFeatureLimitByCode('mb_storage'), -1);
 
         $this->assertTrue($plan->hasFeature('images_feature'));
         $this->assertTrue($plan->hasFeature('premium_feature'));

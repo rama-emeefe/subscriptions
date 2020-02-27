@@ -36,10 +36,10 @@ class Plan extends Model implements PlanInterface{
         $feature = $this->type->features()->limitType()->where('code', $featureCode)->first();
         if($feature) {
             if($limit >= 1) {
-                if($this->hasFeature($featureCode)){
-                    $existenFeature = $this->features()->limitType()->where('code', $featureCode)->first()->pivot;
-                    $existenFeature->limit = $limit;
-                    $existenFeature->save();
+                $existentFeature = $this->features()->limitType()->where('code', $featureCode)->first();
+                if($existentFeature){
+                    $existentFeature->pivot->limit = $limit;
+                    $existentFeature->pivot->save();
                     return true;
                 } else {
                     $this->features()->attach($feature->id, ['limit' => $limit]);
@@ -51,20 +51,22 @@ class Plan extends Model implements PlanInterface{
     }
 
     public function getFeatureLimitByCode($featureCode) {
-        if($this->hasFeature($featureCode)) {
-            $limit = $this->features()->limitType()->where('code', $featureCode)->first();
-            if($limit) {
-                return $limit->pivot->limit;
-            } else {
-                return -1;
+        $limit = $this->features()->limitType()->where('code', $featureCode)->first();
+        if($limit) {
+            $limitNumber = $limit->pivot->limit;
+            if($limitNumber) {
+                return $limitNumber;
             }
+            return 0;
+        } 
+        if( $this->hasFeature($featureCode)) { 
+            return -1;
         }
-        //TODO verificar que el plan tenga el feature del tipo limit pero a traves de su type
         return -1;
     }
 
     public function hasFeature(string $featureCode){
-        $feature = $this->features()->where('code', $featureCode)->first();
+        $feature = $this->type->features()->where('code', $featureCode)->first();
         if($feature) {
             return true;
         }
