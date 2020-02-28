@@ -8,7 +8,7 @@ interface PeriodBuilderInterface{
      * Set the price of plan period
      * 
      * @param float $price
-     * @return PlanPeriod
+     * @return PeriodBuilder
      */
     public function setPrice(float $price);
 
@@ -17,7 +17,7 @@ interface PeriodBuilderInterface{
      * ISO 4217
      * 
      * @param string $currency
-     * @return PlanPeriod
+     * @return PeriodBuilder
      */
     public function setCurrency(string $currency);
 
@@ -25,7 +25,7 @@ interface PeriodBuilderInterface{
      * Set the trial days of plan period
      * 
      * @param int $trialDays
-     * @return PlanPeriod
+     * @return PeriodBuilder
      */
     public function setTrialDays(int $trialDays);
 
@@ -34,7 +34,7 @@ interface PeriodBuilderInterface{
      * 
      * @param int $count
      * @param string $unit
-     * @return PlanPeriod
+     * @return PeriodBuilder
      */
     public function setRecurringPeriod(int $count, string $unit);
 
@@ -43,14 +43,14 @@ interface PeriodBuilderInterface{
      * 
      * @param int $count
      * @param string $unit
-     * @return PlanPeriod
+     * @return PeriodBuilder
      */
     public function setLimitedNonRecurringPeriod(int $count, string $unit);
 
     /**
      * Set the plan period as hidden
      * 
-     * @return PlanPeriod
+     * @return PeriodBuilder
      */
     public function setHidden();
 
@@ -58,20 +58,20 @@ interface PeriodBuilderInterface{
      * Set the tolerance days of the plan period
      * 
      * @param int $toleranceDays
-     * @return PlanPeriod
+     * @return PeriodBuilder
      */
     public function setToleranceDays(int $toleranceDays);
 
     /**
      * Set the plan period as default
      * 
-     * @return PlanPeriod
+     * @return PeriodBuilder
      */
     public function setDefault();
 
     /**
      * Build the plan period and return
-     * the PlanPeriod instance
+     * the PeriodBuilder instance
      * 
      * @return PlanPeriod
      */
