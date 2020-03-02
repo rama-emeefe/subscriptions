@@ -14,7 +14,7 @@ class PlanType extends Model implements PlanTypeInterface{
         return $this->hasMany(Plan::class, 'plan_type_id');
     }
     public function subscriptions(){
-
+        return $this->hasMany(PlanSubscription::class, 'plan_type_id');
     }
     public function attachFeature(PlanFeature $planFeature){
         $this->features()->attach($planFeature->id);

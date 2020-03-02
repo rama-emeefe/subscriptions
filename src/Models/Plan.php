@@ -20,6 +20,10 @@ class Plan extends Model implements PlanInterface{
         return $this->belongsToMany(PlanFeature::class, 'plan_feature_values', 'plan_id', 'plan_feature_id')->withPivot('limit');
     }
 
+    public function periods() {
+        return $this->hasMany(PlanPeriod::class, 'plan_id');
+    }
+
     public function scopeByType($query, string $type){
         return $query->where('plan_type_id', $type);
     }

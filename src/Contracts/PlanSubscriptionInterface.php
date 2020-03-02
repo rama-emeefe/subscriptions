@@ -16,6 +16,11 @@ interface PlanSubscriptionInterface{
     public function subscriber();
 
     /**
+     * The features relationship
+     */
+    public function features();
+
+    /**
      * The plan type relationship
      */
     public function plan_type();

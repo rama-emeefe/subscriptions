@@ -17,6 +17,11 @@ interface PlanInterface{
      */
     public function features();
 
+    /**
+     * The periods relationship throught
+     */
+    public function periods();
+
     
     /**
      * Scope plans by type

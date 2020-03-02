@@ -24,7 +24,7 @@ class CreatePlanPeriodsTable extends Migration {
 			$table->enum('period_unit', array('day','month','year'))->nullable()->comment('Si es null no es recurrente');
 			$table->integer('period_count')->nullable()->comment('Si es null no es recurrente');
 			$table->boolean('is_recurring')->default(0);
-			$table->boolean('is_')->nullable()->default(1);
+			$table->boolean('is_visible')->nullable()->default(1);
 			$table->integer('tolerance_days')->default(0);
 			$table->timestamps();
 			$table->boolean('is_default')->default(0);

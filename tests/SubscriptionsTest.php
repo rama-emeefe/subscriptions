@@ -8,6 +8,7 @@ use Subscriptions;
 use Emeefe\Subscriptions\Models\PlanFeature;
 use Emeefe\Subscriptions\Models\PlanType;
 use Emeefe\Subscriptions\Models\Plan;
+use Emeefe\Subscriptions\Models\PlanPeriod;
 use Emeefe\Subscriptions\Exceptions\RepeatedCodeException;
 use Carbon\Carbon;
 
@@ -107,12 +108,12 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
      * repeated in the same type of plan
      */
     public function test_repeated_code_exception_in_same_type(){
+        $this->expectException(RepeatedCodeException::class);
         $planType = $this->createPlanType();
 
         $this->createPlan('test_code', $planType);
         $this->createPlan('test_code', $planType);
 
-        $this->expectException(RepeatedCodeException::class);
     }
 
     /**
@@ -290,7 +291,7 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
             ->create();
 
         $this->assertEquals($planCorrectTrailPeriod->trial_days, 5);
-        $this->assertTrue($planNegativeTrialPeriod->hasTrial());
+        $this->assertTrue($planCorrectTrailPeriod->hasTrial());
     }
 
     /**
@@ -325,8 +326,8 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
         $this->assertFalse($nonRecurrentPeriod->isRecurring());
         $this->assertTrue($nonRecurrentPeriod->isLimitedNonRecurring());
         $this->assertFalse($nonRecurrentPeriod->isUnlimitedNonRecurring());
-        $this->assertEquals($recurrentPeriod->period_count, 1);
-        $this->assertSame($recurrentPeriod->period_unit, PlanPeriod::UNIT_YEAR);
+        $this->assertEquals($nonRecurrentPeriod->period_count, 1);
+        $this->assertSame($nonRecurrentPeriod->period_unit, PlanPeriod::UNIT_YEAR);
     }
 
     /**
@@ -342,8 +343,8 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
         $this->assertFalse($nonRecurrentPeriod->isRecurring());
         $this->assertFalse($nonRecurrentPeriod->isLimitedNonRecurring());
         $this->assertTrue($nonRecurrentPeriod->isUnlimitedNonRecurring());
-        $this->assertNull($recurrentPeriod->period_count);
-        $this->assertNull($recurrentPeriod->period_unit);
+        $this->assertNull($nonRecurrentPeriod->period_count);
+        $this->assertNull($nonRecurrentPeriod->period_unit);
     }
 
     /**
@@ -410,7 +411,7 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
         $this->assertTrue($defaultPeriod->isDefault());
 
         $nonDefaultPeriod->setAsDefault();
-        $defaultPeriod->reload();
+        $defaultPeriod->refresh();
 
         $this->assertTrue($nonDefaultPeriod->isDefault());
         $this->assertFalse($defaultPeriod->isDefault());
@@ -744,4 +745,8 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
             return $plan;
         }        
     }
+
+    // public function createUser() {
+
+    // }
 }

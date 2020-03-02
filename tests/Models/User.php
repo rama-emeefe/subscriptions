@@ -9,4 +9,7 @@ class User extends Model
     use CanSubscribe;
 
     public $timestamps = false;
+    protected $fillable = [
+        'name'
+    ];
 }

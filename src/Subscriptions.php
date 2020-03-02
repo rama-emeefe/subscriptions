@@ -33,6 +33,6 @@ class Subscriptions{
      * @return PeriodBuilder
      */
     public function period(string $displayName, string $code, Plan $plan){
-        //TODO Escribir la logica para devolver un builder
+        return new PeriodBuilder($displayName, $code, $plan);
     }
 }
