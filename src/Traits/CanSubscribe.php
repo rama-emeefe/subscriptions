@@ -10,7 +10,7 @@ trait CanSubscribe{
      * The subscriptions relationship
      */
     public function subscriptions(){
-        //TODO
+        return $this->morphMany(PlanSubscription::class, 'subscriber');
     }
 
     /**
@@ -21,7 +21,14 @@ trait CanSubscribe{
      * @return boolean 
      */
     public function subscribeTo(PlanPeriod $period, int $periodCount = 1){
-        //TODO
+        //TODO verificar si hay currentSubsciption y no esta cancelada devolver false
+        $subscription = new PlanSubscription();
+        $subscription->period_id = $period->id;
+        $subscription->subscriber_id = $this->id;
+        $subscription->subscriber_type = get_class($this);
+        $subscription->trial_starts_at = Carbon\Carbon::now();
+        $subscription->starts_at = Carbon\Carbon::now()->addDays($period->trial_days);
+        $subscription->expires_at = ($period->isRecurring()) ? null : null;
     }
 
     /**
@@ -41,6 +48,6 @@ trait CanSubscribe{
      * @return PlanSubscription
      */
     public function currentSubscription($planTypeOrType){
-        //TODO
+        //TODO la ultima por starts_at
     }
 }    

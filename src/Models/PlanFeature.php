@@ -23,7 +23,7 @@ class PlanFeature extends Model implements PlanFeatureInterface{
     }
 
     public function subscriptions() {
-        
+        return $this->belongsToMany(PlanSubscription::class, 'plan_subscription_usage', 'feature_id', 'subscription_id')->withPivot(['limit', 'usage']);
     }
 
     public function scopeLimitType($query) {

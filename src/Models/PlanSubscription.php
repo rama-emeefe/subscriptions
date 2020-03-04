@@ -7,6 +7,12 @@ use Emeefe\Subscriptions\Contracts\PlanSubscriptionInterface;
 
 class PlanSubscription extends Model implements PlanSubscriptionInterface{
 
+    //cast de fechas
+    protected $casts = [
+        'trial_starts_at' => 'datetime',
+        'starts_at' => 'datetime'
+    ];
+
     public function period(){
         return $this->belongsTo(PlanPeriod::class, 'period_id');
     }
@@ -20,7 +26,7 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
     }
 
     public function features() {
-        
+        return $this->belongsToMany(PlanFeature::class, 'plan_subscription_usage', 'feature_id', 'subscription_id')->withPivot(['limit', 'usage']);
     }
 
     public function scopeByType($query, PlanType $planType) {
