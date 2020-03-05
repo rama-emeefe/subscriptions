@@ -46,19 +46,35 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
     }
 
     public function isOnTrial() {
-
+        $currentDay = Carbon\Carbon::now();
+        if($currentDay > $this->trial_starts_at && $currentDay < $this->starts_at) {
+            return true;
+        }
+        return false;
     }
 
     public function isActive() {
-
+        $currentDay = Carbon\Carbon::now();
+        if($currentDay > $this->starts_at && $currentDay < $this->expires_at || $this->expires_at == null) {
+            return true;
+        }
+        return false;
     }
 
     public function isValid() {
-
+        if($this->isOnTrial() || $this->isActive() || $this->isExpiredWithTolerance()) {
+            return true;
+        }
+        return false;
     }
 
     public function isExpiredWithTolerance() {
-
+        $currentDay = Carbon\Carbon::now();
+        $expireDateWithTolerance = Carbon\Carbon::parse($this->expires_at)->addDays($this->tolerance_days);
+        if($currentDay > $this->expires_at && $currentDay < $expireDateWithTolerance) {
+            return true;
+        }
+        return false;
     }
 
     public function isFullExpired() {
