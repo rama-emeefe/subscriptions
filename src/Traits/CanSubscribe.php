@@ -2,7 +2,9 @@
 
 namespace Emeefe\Subscriptions\Traits;
 
+use Emeefe\Subscriptions\Models\PlanSubscription;
 use Emeefe\Subscriptions\Models\PlanPeriod;
+use Carbon\Carbon;
 
 trait CanSubscribe{
 
@@ -22,22 +24,28 @@ trait CanSubscribe{
      */
     public function subscribeTo(PlanPeriod $period, int $periodCount = 1){
         //TODO verificar si hay currentSubsciption y no esta cancelada devolver false
-        $subscription = new PlanSubscription();
-        $subscription->period_id = $period->id;
-        $subscription->subscriber_id = $this->id;
-        $subscription->subscriber_type = get_class($this);
-        $subscription->trial_starts_at = Carbon\Carbon::now()->toDateTimeString();
-        $subscription->starts_at = Carbon\Carbon::now()->addDays($period->trial_days)->toDateTimeString();
-        $subscription->expires_at = ($period->isRecurring()) ? null : null; //duda
-        $subscription->cancelled_at = null;
-        $subscription->cancellation_reason = null;
-        $subscription->plan_type_id = $period->plan()->type()->id;
-        $subscription->price = $period->price;
-        $subscription->tolerance_days = $period->tolerance_days;
-        $subscription->currency = $period->currency;
-        $subscription->period_unit = $period->period_unit;
-        $subscription->period_count = $period->period_count;
-        $subscription->is_recurring = $period->is_recurring;
+        if (!$this->currentSubscription($period->plan_id)) {
+            $subscription = new PlanSubscription();
+            $subscription->period_id = $period->id;
+            $subscription->subscriber_id = $this->id;
+            $subscription->subscriber_type = get_class($this);
+            $subscription->trial_starts_at = Carbon::now()->toDateTimeString();
+            $subscription->starts_at = Carbon::now()->addDays($period->trial_days)->toDateTimeString();
+            $subscription->expires_at = ($period->isRecurring()) ? null : null; //duda
+            $subscription->cancelled_at = null;
+            $subscription->cancellation_reason = null;
+            $subscription->plan_type_id = $period->plan->type->id;
+            $subscription->price = $period->price;
+            $subscription->tolerance_days = $period->tolerance_days;
+            $subscription->currency = $period->currency;
+            $subscription->period_unit = $period->period_unit;
+            $subscription->period_count = $periodCount;
+            $subscription->is_recurring = $period->is_recurring;
+            $subscription->save();
+            return true;
+        } 
+
+        return false;
     }
 
     /**
@@ -48,6 +56,27 @@ trait CanSubscribe{
      */
     public function hasSubscription($planTypeOrType){
         //TODO
+        if(is_string($planTypeOrType)) {
+            $subscriptions = $this->subscriptions();
+            $band = false;
+            foreach($subscriptions as $sub) {
+                // if($sub->plan_type->type == $planTypeOrType) {
+                //     return true;
+                // }
+                if($sub->hasType($planTypeOrType)) {
+                    $band = true;
+                }
+            }
+            if($band) {
+                return true;
+            }            
+        } else {
+            if($this->subscriptions()->where('plan_type_id', $planTypeOrType->id)->first()){
+                return true;
+            }
+        }
+        
+        return false;
     }
 
     /**
@@ -58,6 +87,9 @@ trait CanSubscribe{
      */
     public function currentSubscription($planTypeOrType){
         //TODO la ultima por starts_at
-        return $this->subscription()->where('starts_at', '<>', null)->first();
+        return $this->subscriptions()->where([
+            ['starts_at', '<>', null],
+            ['plan_type_id', $planTypeOrType],       
+        ])->first();
     }
 }    

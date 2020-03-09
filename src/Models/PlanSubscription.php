@@ -31,6 +31,13 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
         return $this->belongsToMany(PlanFeature::class, 'plan_subscription_usage', 'feature_id', 'subscription_id')->withPivot(['limit', 'usage']);
     }
 
+    public function hasType(string $type) {
+        if ($this->plan_type->type == $type) {
+            return true;
+        }
+        return false;
+    }
+
     public function scopeByType($query, PlanType $planType) {
         return $query->where('plan_type_id', $planType->id);
     }
