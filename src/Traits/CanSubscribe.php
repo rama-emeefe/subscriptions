@@ -5,6 +5,7 @@ namespace Emeefe\Subscriptions\Traits;
 use Emeefe\Subscriptions\Models\PlanSubscription;
 use Emeefe\Subscriptions\Models\PlanPeriod;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 
 trait CanSubscribe{
 
@@ -31,7 +32,17 @@ trait CanSubscribe{
             $subscription->subscriber_type = get_class($this);
             $subscription->trial_starts_at = Carbon::now()->toDateTimeString();
             $subscription->starts_at = Carbon::now()->addDays($period->trial_days)->toDateTimeString();
-            $subscription->expires_at = ($period->isRecurring()) ? null : null; //duda
+            if($period->is->isRecurring()) {
+                if($period->period_unit == 'day') {
+                    if($period->period_unit == 'month') {
+                        if($period->period_unit == 'year') {
+                            Carbon::parse($subscription->starts_at)->addDays($periodCount);
+                        }
+                    }
+                }
+            } else {
+                $subscription->expires_at = null;
+            }
             $subscription->cancelled_at = null;
             $subscription->cancellation_reason = null;
             $subscription->plan_type_id = $period->plan->type->id;
@@ -55,25 +66,12 @@ trait CanSubscribe{
      * @return boolean
      */
     public function hasSubscription($planTypeOrType){
-        //TODO
         if(is_string($planTypeOrType)) {
-            $subscriptions = $this->subscriptions();
-            $band = false;
-            foreach($subscriptions as $sub) {
-                // if($sub->plan_type->type == $planTypeOrType) {
-                //     return true;
-                // }
-                if($sub->hasType($planTypeOrType)) {
-                    $band = true;
-                }
-            }
-            if($band) {
-                return true;
-            }            
+            return $subscriptions = $this->subscriptions()->whereHas('plan_type', function(Builder $query) use ($planTypeOrType){
+                $query->where('type', $planTypeOrType);
+            })->exists();           
         } else {
-            if($this->subscriptions()->where('plan_type_id', $planTypeOrType->id)->first()){
-                return true;
-            }
+            return $this->subscriptions()->where('plan_type_id', $planTypeOrType->id)->exists();
         }
         
         return false;
@@ -86,10 +84,15 @@ trait CanSubscribe{
      * @return PlanSubscription
      */
     public function currentSubscription($planTypeOrType){
-        //TODO la ultima por starts_at
+        if(is_int($planTypeOrType)) {
+            return $this->subscriptions()->where([
+                ['starts_at', '<>', null],
+                ['plan_type_id', $planTypeOrType],       
+            ])->first();
+        }
         return $this->subscriptions()->where([
             ['starts_at', '<>', null],
-            ['plan_type_id', $planTypeOrType],       
+            ['plan_type_id', $planTypeOrType->id],       
         ])->first();
     }
 }    

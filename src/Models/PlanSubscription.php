@@ -4,6 +4,7 @@ namespace Emeefe\Subscriptions\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Emeefe\Subscriptions\Contracts\PlanSubscriptionInterface;
+use Carbon\Carbon;
 
 class PlanSubscription extends Model implements PlanSubscriptionInterface{
 
@@ -55,16 +56,16 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
     }
 
     public function isOnTrial() {
-        $currentDay = Carbon\Carbon::now();
-        if($currentDay > $this->trial_starts_at && $currentDay < $this->starts_at) {
+        $currentDay = Carbon::now();
+        if($currentDay >= Carbon::parse($this->trial_starts_at) && $currentDay < Carbon::parse($this->starts_at)) {
             return true;
         }
         return false;
     }
 
     public function isActive() {
-        $currentDay = Carbon\Carbon::now();
-        if($currentDay > $this->starts_at && $currentDay < $this->expires_at || $this->expires_at == null) {
+        $currentDay = Carbon::now();
+        if($currentDay >= $this->starts_at && $currentDay < $this->expires_at || $this->expires_at == null) {
             return true;
         }
         return false;
@@ -78,8 +79,8 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
     }
 
     public function isExpiredWithTolerance() {
-        $currentDay = Carbon\Carbon::now();
-        $expireDateWithTolerance = Carbon\Carbon::parse($this->expires_at)->addDays($this->tolerance_days);
+        $currentDay = Carbon::now();
+        $expireDateWithTolerance = Carbon::parse($this->expires_at)->addDays($this->tolerance_days);
         if($currentDay > $this->expires_at && $currentDay < $expireDateWithTolerance) {
             return true;
         }
@@ -87,8 +88,8 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
     }
 
     public function isFullExpired() {
-        $currentDay = Carbon\Carbon::now();
-        $expireDateWithTolerance = Carbon\Carbon::parse($this->expires_at)->addDays($this->tolerance_days);
+        $currentDay = Carbon::now();
+        $expireDateWithTolerance = Carbon::parse($this->expires_at)->addDays($this->tolerance_days);
         if($currentDay > $this->expires_at && $currentDay < $expireDateWithTolerance) {
             return false;
         }
@@ -96,10 +97,10 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
     }
 
     public function remainingTrialDays() {
-        $currentDay = Carbon\Carbon::now();
+        $currentDay = Carbon::now();
         if($currentDay < $this->starts_at) {
-            $remainingDays = $currentDay->floatDiffInDays($this->starts_at);
-            return (int) $r;
+            $remainingDays = $currentDay->floatDiffInDays($this->starts_at) - 1.0;
+            return (int) $remainingDays;
         }
         return 0;
     }
@@ -115,7 +116,7 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
 
     public function cancel(string $reason = null) {
         if($this->period_count == null || $this->cancelled_at == null) {
-            $this->cancelled_at = Carbon\Carbon::now()->toDateTimeString();
+            $this->cancelled_at = Carbon::now()->toDateTimeString();
             $this->cancellation_reason = $reason;
             $this->save();
             return true;

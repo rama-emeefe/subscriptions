@@ -453,7 +453,7 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
         $user->subscribeTo($period);
         $currentSubscription = $user->currentSubscription($planType);
 
-        $this->asertEquals($user->subscriptions()->byType($planType)->count(), 1);
+        $this->assertEquals($user->subscriptions()->byType($planType)->count(), 1);
         $this->assertNotNull($currentSubscription);
         $this->assertTrue($currentSubscription->isOnTrial());
         $this->assertEquals($currentSubscription->remainingTrialDays(), 9);
