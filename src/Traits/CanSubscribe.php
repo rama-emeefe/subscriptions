@@ -25,6 +25,7 @@ trait CanSubscribe{
      */
     public function subscribeTo(PlanPeriod $period, int $periodCount = 1){
         //TODO verificar si hay currentSubsciption y no esta cancelada devolver false
+
         if (!$this->currentSubscription($period->plan_id)) {
             $subscription = new PlanSubscription();
             $subscription->period_id = $period->id;
@@ -32,13 +33,22 @@ trait CanSubscribe{
             $subscription->subscriber_type = get_class($this);
             $subscription->trial_starts_at = Carbon::now()->toDateTimeString();
             $subscription->starts_at = Carbon::now()->addDays($period->trial_days)->toDateTimeString();
-            if($period->is->isRecurring()) {
+            $days = 0;
+            if($period->is_recurring) {
                 if($period->period_unit == 'day') {
-                    if($period->period_unit == 'month') {
-                        if($period->period_unit == 'year') {
-                            Carbon::parse($subscription->starts_at)->addDays($periodCount);
-                        }
-                    }
+                    $days = $period->period_count;
+                    $subscription->expires_at = Carbon::parse($subscription->starts_at)->addDays($days)->toDateTimeString();
+                }
+                if($period->period_unit == 'month') {
+                    $days = $period->period_count * 30;
+                    $subscription->expires_at = Carbon::parse($subscription->starts_at)->addDays($days)->toDateTimeString();
+                }
+                if($period->period_unit == 'year') {
+                    $days = $period->period_count * 365;
+                    $subscription->expires_at = Carbon::parse($subscription->starts_at)->addDays($days)->toDateTimeString();
+                }
+                if($period->period_unit == null) {
+                    $subscription->expires_at = null;
                 }
             } else {
                 $subscription->expires_at = null;
