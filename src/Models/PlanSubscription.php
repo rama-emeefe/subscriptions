@@ -64,8 +64,8 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
     }
 
     public function isActive() {
-        $currentDay = Carbon::now();
         // var_dump($this->expires_at);
+        $currentDay = Carbon::now();
         if($currentDay >= $this->starts_at && $currentDay < $this->expires_at || $this->expires_at == null) {
             return true;
         }
@@ -80,16 +80,18 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
     }
 
     public function isExpiredWithTolerance() {
-        $currentDay = Carbon::now();
-        $expireDateWithTolerance = Carbon::parse($this->expires_at)->addDays($this->tolerance_days);
-        if($currentDay > $this->expires_at && $currentDay < $expireDateWithTolerance) {
-            return true;
+        if(!$this->isCanceled()) {
+            $currentDay = Carbon::now();
+            $expireDateWithTolerance = Carbon::parse($this->expires_at)->addDays($this->tolerance_days);
+            if($currentDay >= $this->expires_at && $currentDay < $expireDateWithTolerance) {
+                return true;
+            }
         }
         return false;
     }
 
     public function isFullExpired() {
-        if( $this->isExpiredWithTolerance() || $this->isActive() || $this->isOnTrial() || $this->isCanceled() != true) {
+        if( $this->isExpiredWithTolerance() || $this->isActive() || $this->isOnTrial()) {
             return false;
         }
         return true;
@@ -105,27 +107,28 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
     }
 
     public function renew(int $periods = 1) {
-        if($this->is_recurring) {
-            $this->period_count = $periods;
-            $this->starts_at = Carbon::now();
-            if($this->period_unit == 'day') {
-                $days = $this->period_count;
-                $this->expires_at = Carbon::parse($this->starts_at)->addDays($days)->toDateTimeString();
+        if(!$this->isCanceled()) {
+            if($this->is_recurring) {
+                $this->period_count = $periods;
+                $this->starts_at = Carbon::now();
+                if($this->period_unit == 'day') {
+                    $days = $this->period_count;
+                    $this->expires_at = Carbon::parse($this->starts_at)->addDays($days)->toDateTimeString();
+                }
+                if($this->period_unit == 'month') {
+                    $days = $this->period_count * 30;
+                    $this->expires_at = Carbon::parse($this->starts_at)->addDays($days)->toDateTimeString();
+                }
+                if($this->period_unit == 'year') {
+                    $days = $this->period_count * 365;
+                    $this->expires_at = Carbon::parse($this->starts_at)->addDays($days)->toDateTimeString();
+                }
+                if($this->period_unit == null) {
+                    $this->expires_at = null;
+                }
+                $this->save();
+                return true;
             }
-            if($this->period_unit == 'month') {
-                $days = $this->period_count * 30;
-                $this->expires_at = Carbon::parse($this->starts_at)->addDays($days)->toDateTimeString();
-                var_dump($this->expires_at);
-            }
-            if($this->period_unit == 'year') {
-                $days = $this->period_count * 365;
-                $this->expires_at = Carbon::parse($this->starts_at)->addDays($days)->toDateTimeString();
-            }
-            if($this->period_unit == null) {
-                $this->expires_at = null;
-            }
-            $this->save();
-            return true;
         }
         return false;
     }

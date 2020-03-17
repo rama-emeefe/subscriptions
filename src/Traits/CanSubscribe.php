@@ -34,7 +34,7 @@ trait CanSubscribe{
             $subscription->trial_starts_at = Carbon::now()->toDateTimeString();
             $subscription->starts_at = Carbon::now()->addDays($period->trial_days)->toDateTimeString();
             $days = 0;
-            if($period->is_recurring) {
+            if($period->is_recurring || $period->isLimitedNonRecurring()) {
                 if($period->period_unit == 'day') {
                     $days = $period->period_count;
                     $subscription->expires_at = Carbon::parse($subscription->starts_at)->addDays($days)->toDateTimeString();
