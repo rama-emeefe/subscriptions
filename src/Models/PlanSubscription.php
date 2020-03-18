@@ -65,9 +65,11 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
 
     public function isActive() {
         // var_dump($this->expires_at);
-        $currentDay = Carbon::now();
-        if($currentDay >= $this->starts_at && $currentDay < $this->expires_at || $this->expires_at == null) {
-            return true;
+        if(!$this->isCanceled()) {
+            $currentDay = Carbon::now();
+            if($currentDay >= $this->starts_at && $currentDay < $this->expires_at || $this->expires_at == null) {
+                return true;
+            }
         }
         return false;
     }
@@ -151,7 +153,7 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
     }
 
     public function hasFeature(string $featureCode) {
-        $feature = $this->features()->where('code', $featureCode)->first();
+        $feature = $this->plan_type->features()->where('code', $featureCode)->exists();
         if($feature) {
             return true;
         }
@@ -159,7 +161,8 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
     }
 
     public function consumeFeature(string $featureCode, int $units = 1) {
-        $feature = $this->features()->limitType()->where('code', $feature)->first();
+        $feature = $this->features()->limitType()->where('code', $featureCode)->first();
+        var_dump($feature);
         if($feature) {
             $limit = $feature->pivot->limit;
             $feature->pivot->limit = $limit - $units;
@@ -169,7 +172,7 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
     }
 
     public function unconsumeFeature(string $featureCode, int $units = 1) {
-        $feature = $this->features()->limitType()->where('code', $feature)->first();
+        $feature = $this->features()->limitType()->where('code', $featureCode)->first();
         if($feature) {
             $limit = $feature->pivot->limit;
             $feature->pivot->limit = $limit + $units;

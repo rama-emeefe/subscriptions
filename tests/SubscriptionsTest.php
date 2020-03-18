@@ -287,6 +287,7 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
 
         //Correct trial days
         $planCorrectTrailPeriod = Subscriptions::period($this->faker->sentence(3), 'period', $plan)
+            ->setLimitedNonRecurringPeriod(12, PlanPeriod::UNIT_MONTH)
             ->setTrialDays(5)
             ->create();
 
@@ -388,6 +389,7 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
 
         //Correct tolerance days
         $planCorrectTolerancePeriod = Subscriptions::period($this->faker->sentence(3), 'period', $plan)
+            ->setLimitedNonRecurringPeriod(12, PlanPeriod::UNIT_MONTH)
             ->setToleranceDays(5)
             ->create();
 
@@ -446,6 +448,7 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
         $planType = $this->createPlanType('user_membership');
         $plan = $this->createPlan('plan', $planType);
         $period = Subscriptions::period($this->faker->sentence(3), 'period', $plan)
+            ->setLimitedNonRecurringPeriod(12, PlanPeriod::UNIT_MONTH)
             ->setTrialDays(10)
             ->create();
 
@@ -640,49 +643,49 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
     /**
      * Test non recurring ilimited subscription 
      */
-    // public function test_subscription_features(){
-    //     $imagesFeature = $this->createPlanFeature('images_feature', 'limit');
-    //     $premiumFeature = $this->createPlanFeature('premium_feature');
-    //     $nonLimitAssignedFeature = $this->createPlanFeature('non_limit_assigned');
+    public function test_subscription_features(){
+        $imagesFeature = $this->createPlanFeature('images_feature', 'limit');
+        $premiumFeature = $this->createPlanFeature('premium_feature');
+        $nonLimitAssignedFeature = $this->createPlanFeature('non_limit_assigned');
 
-    //     $planType = $this->createPlanType('user_membership')
-    //         ->attachFeature($imagesFeature)
-    //         ->attachFeature($premiumFeature)
-    //         ->attachFeature($nonLimitAssignedFeature);
+        $planType = $this->createPlanType('user_membership')
+            ->attachFeature($imagesFeature)
+            ->attachFeature($premiumFeature)
+            ->attachFeature($nonLimitAssignedFeature);
 
-    //     $plan = $this->createPlan('plan', $planType);
-    //     $plan->assignFeatureLimitByCode('images_feature', 10);
+        $plan = $this->createPlan('plan', $planType);
+        $plan->assignFeatureLimitByCode('images_feature', 10);
 
-    //     $period = Subscriptions::period($this->faker->sentence(3), 'period', $plan)
-    //         ->create();
+        $period = Subscriptions::period($this->faker->sentence(3), 'period', $plan)
+            ->create();
 
-    //     $user = $this->createUser();
-    //     $user->subscribeTo($period);
-    //     $currentSubscription = $user->currentSubscription($planType);
+        $user = $this->createUser();
+        $user->subscribeTo($period);
+        $currentSubscription = $user->currentSubscription($planType);
 
-    //     $this->assertTrue($currentSubscription->hasFeature('images_feature'));
-    //     $this->assertTrue($currentSubscription->hasFeature('premium_feature'));
-    //     $this->assertTrue($currentSubscription->hasFeature('non_limit_assigned'));
-    //     $this->assertFalse($currentSubscription->hasFeature('inexistent_feature'));
+        $this->assertTrue($currentSubscription->hasFeature('images_feature'));
+        $this->assertTrue($currentSubscription->hasFeature('premium_feature'));
+        $this->assertTrue($currentSubscription->hasFeature('non_limit_assigned'));
+        $this->assertFalse($currentSubscription->hasFeature('inexistent_feature'));
 
-    //     $this->assertFalse($currentSubscription->unconsumeFeature('images_feature'));
-    //     $this->assertTrue($currentSubscription->consumeFeature('images_feature', 3));
-    //     $this->assertEquals($currentSubscription->getRemainingOf('images_feature'), 7);
-    //     $this->assertFalse($currentSubscription->consumeFeature('images_feature', 8));
-    //     $this->assertEquals($currentSubscription->getRemainingOf('images_feature'), 7);
-    //     $this->assertTrue($currentSubscription->unconsumeFeature('images_feature'));
-    //     $this->assertTrue($currentSubscription->consumeFeature('images_feature', 8));
-    //     $this->assertTrue($currentSubscription->getUsageOf('images_feature'), 10);
+        $this->assertFalse($currentSubscription->unconsumeFeature('images_feature'));
+        $this->assertTrue($currentSubscription->consumeFeature('images_feature', 3));
+        $this->assertEquals($currentSubscription->getRemainingOf('images_feature'), 7);
+        $this->assertFalse($currentSubscription->consumeFeature('images_feature', 8));
+        $this->assertEquals($currentSubscription->getRemainingOf('images_feature'), 7);
+        $this->assertTrue($currentSubscription->unconsumeFeature('images_feature'));
+        $this->assertTrue($currentSubscription->consumeFeature('images_feature', 8));
+        $this->assertTrue($currentSubscription->getUsageOf('images_feature'), 10);
 
-    //     $this->assertFalse($currentSubscription->unconsumeFeature('premium_feature'));
-    //     $this->assertFalse($currentSubscription->consumeFeature('premium_feature', 3));
-    //     $this->assertNull($currentSubscription->getRemainingOf('premium_feature'));
-    //     $this->assertNull($currentSubscription->getUsageOf('premium_feature'));   
+        $this->assertFalse($currentSubscription->unconsumeFeature('premium_feature'));
+        $this->assertFalse($currentSubscription->consumeFeature('premium_feature', 3));
+        $this->assertNull($currentSubscription->getRemainingOf('premium_feature'));
+        $this->assertNull($currentSubscription->getUsageOf('premium_feature'));   
 
-    //     $this->assertFalse($currentSubscription->unconsumeFeature('premium_feature'));
-    //     $this->assertFalse($currentSubscription->consumeFeature('premium_feature'));
-    //     $this->assertEquals($currentSubscription->getRemainingOf('premium_feature'), 0);
-    // }
+        $this->assertFalse($currentSubscription->unconsumeFeature('premium_feature'));
+        $this->assertFalse($currentSubscription->consumeFeature('premium_feature'));
+        $this->assertEquals($currentSubscription->getRemainingOf('premium_feature'), 0);
+    }
 
 
     /**

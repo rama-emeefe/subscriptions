@@ -80,6 +80,10 @@ class PeriodBuilder implements PeriodBuilderInterface{
     }
 
     public function create() {
+        if($this->period->period_unit == null && $this->period->period_count == null) {
+            $this->period->tolerance_days = 0;
+            $this->period->trial_days = 0;
+        }
         $this->period->save();
         return $this->period;
     }
