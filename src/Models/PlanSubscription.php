@@ -153,7 +153,7 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
     }
 
     public function hasFeature(string $featureCode) {
-        $feature = $this->plan_type->features()->where('code', $featureCode)->exists();
+        $feature = $this->features()->where('code', $featureCode)->exists();
         if($feature) {
             return true;
         }
@@ -162,10 +162,11 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
 
     public function consumeFeature(string $featureCode, int $units = 1) {
         $feature = $this->features()->limitType()->where('code', $featureCode)->first();
-        var_dump($feature);
+        //var_dump($feature);
         if($feature) {
-            $limit = $feature->pivot->limit;
-            $feature->pivot->limit = $limit - $units;
+            $usage = $feature->pivot->usage;
+            $feature->pivot->usage = $usage - $units;
+            $feature->pivot->save();
             return true;
         }
         return false;
@@ -174,18 +175,25 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
     public function unconsumeFeature(string $featureCode, int $units = 1) {
         $feature = $this->features()->limitType()->where('code', $featureCode)->first();
         if($feature) {
-            $limit = $feature->pivot->limit;
-            $feature->pivot->limit = $limit + $units;
+            $usage = $feature->pivot->usage;
+            $feature->pivot->usage = $usage + $units;
+            $feature->pivot->save();
             return true;
         }
         return false;
     }
 
     public function getUsageOf(string $featureCode) {
-
+        $feature = $this->features()->limitType()->where('code', $featureCode)->first();
+        $usage = $feature->pivot->usage;
+        return $usage;
     }
 
     public function getRemainingOf(string $featureCode) {
-
+        $feature = $this->features()->limitType()->where('code', $featureCode)->first();
+        $usage = $feature->pivot->usage;
+        $limit = $feature->pivot->limit;
+        $remaining = $limit - $usage;
+        return $remaining;
     }
 }

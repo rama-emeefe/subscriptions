@@ -65,13 +65,19 @@ trait CanSubscribe{
             $subscription->save();
 
             //TODO OBTENER FEATURES A TRAVES DEL PLAN
-            //$featuresPlan = $period->plan->features
+            $featuresPlan = $period->plan->features()->get();
+
             //TODO ITERAR Y ASIGNAR A LA SUSCRIPCION
-            /*
+            
             foreach($featuresPlan as $featurePlan){
-                $subscription->features()->attach([ligar $featurePlan])
-                Si es limit se debe rellenar los campos pivote limit y usage
-            }*/
+                if($featurePlan->type == 'limit') {
+                    $subscription->features()->attach($featurePlan->id, ['limit' => $featurePlan->pivot->limit, 'usage' => 0]);
+                    var_dump($featurePlan->pivot->limit);
+                } else {
+                    $subscription->features()->attach($featurePlan->id);
+                }
+                // Si es limit se debe rellenar los campos pivote limit y usage
+            }
 
             return true;
         } 
