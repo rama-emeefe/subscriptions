@@ -297,6 +297,20 @@ if($user->subscribeTo($period)){
 
 Hecho esto se creará una suscripción ligada al modelo, en este caso usuario, al plan y al periodo.
 
+La estructura de la función es la siguiente:
+
+`subscribeTo(PlanPeriod $period, int $periodCount = 1)`
+
+- `$period`: Instancia del periodo al que se suscribirá el modelo
+- `$periodCount`: Ciclos del periodo por los que se suscribirá inicialmente el modelo, solo cuando no es ilimitado
+
+Para la suscripción a periodos mensuales se usan las isguientes reglas especiales:
+
+- Si se suscribe en una fecha con día 29, 30 o 31 y que no todos los meses lo pueden tener entonces al sumar un mes se pone el mismo día o el menor más cercano siempre tomando en cuenta el día de inicio, por ejemplo:
+    - Un modelo se suscribe el 31 de enero de 2020 por un mes, entonces caduca el 29 de febrero de 2020.
+    - Si dicha suscripción se renueva otro mes no se define la fecha de expiración al 29 de Marzo si no que se conserva el día 31 definiendo 31 de Marzo de 2020.
+    - Las siguientes fechas por cada mes serian 30 de Abril, 31 de Mayo, 30 de Junio, etc.
+
 ### Verificar suscripción
 Se puede verificar la suscripción de un modelo a un tipo de plan por medio del método `hasSubscription($planTypeOrType)` donde `$planTypeOrType` es una instancia del tipo de modelo o el `string` definido en la propiedad `type` del tipo de plan.
 
@@ -406,7 +420,7 @@ Filtra features por tipo `feature`
 
 #### `assignFeatureLimitByCode(int $limit, string $featureCode)`
 
-Asigna el límite que tendrá un feature del tipo `limit` de un plan.
+Asigna el límite que tendrá un feature del tipo `limit` de un plan, en el caso de aún no tener límite asignado entonces lo asigna y para el caso en que ya ha sido definido un límite lo actualiza.
 
 - `$limit`: Límite a asignar, número mayor o igual a 1
 - `$featureCode`: Código del feature
@@ -636,14 +650,14 @@ Devuelve:
 
 #### `renew(int $periods = 1)`
 
-Renueva la suscripción solo si es recurrente
+Renueva la suscripción solo si es recurrente y no está cancelada
 
 - `$periods`: Cantidad de periodos a renovar, por default `1`
 
 Devuelve:
 
 - `true`: Cuando la suscripción es recurrente y se renueva exitósamente
-- `false`: Cuando la suscripción es no recurrente
+- `false`: Cuando la suscripción es no recurrente o está cancelada
 
 #### `cancel(string $reason = null)`
 
@@ -743,4 +757,30 @@ Filtra suscripciones recurrentes
 
 # Eventos
 
-**QUEDA PENDIENTE**
+Este paquete ofrece muchas posibilidades que pueden manejarse de una mejor manera por medio de la escucha de eventos.
+
+`Emeefe\Subscriptions\Events\FeatureLimitChangeOnPlan`
+Se lanza cuando se actualiza el límite de un feature en un plan, no cuando es asignado por primera vez.
+
+- `$event->plan`: El plan al que se asigna el feature limit
+- `$event->feature`: El feature al que se le asignará el límite
+- `$event->limit`: El nuevo límite que se asigna
+
+`Emeefe\Subscriptions\Events\PlanPeriodChange`
+Se lanza cuando un periodo de plan es actualizado en alguno de los campos `price`, `currency`, `trial_days`, `period_unit`, `period_count`, `is_recurring`, `is_visible` o `tolerance_days`.
+
+- `$event->oldPlanPeriod`: Antiguo periodo de plan
+- `$event->newPlanPeriod`: Periodo de plan actualizado
+
+`Emeefe\Subscriptions\Events\NewSubscription`
+Se lanza cuando un modelo se suscribe a un plan por medio de un periodo
+
+- `$event->model`: El modelo que se suscribe
+- `$event->subscription`: La suscripción creada
+
+`Emeefe\Subscriptions\Events\RenewSubscription`
+Se lanza cuando una suscripción es renovada/extendida
+
+- `$event->model`: El modelo al que pertenece la suscripción
+- `$event->subscription`: La suscripción que se renueva
+- `$event->`

@@ -32,6 +32,7 @@ class SubscriptionsServiceProvider extends ServiceProvider
     {
         Plan::observe(PlanObserver::class);
         PlanPeriod::observe(PlanPeriodObserver::class);
+        $this->publishMigrations();
     }
 
     private function registerSubscriptionsPackage(){
@@ -40,5 +41,11 @@ class SubscriptionsServiceProvider extends ServiceProvider
         });
 
         AliasLoader::getInstance()->alias('Subscriptions', SubscriptionsFacade::class);
+    }
+
+    private function publishMigrations(){
+        $this->publishes([
+            __DIR__.'/../database/migrations/' => database_path('migrations')
+        ], 'migrations');
     }
 }

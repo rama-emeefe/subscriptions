@@ -35,6 +35,8 @@ trait CanSubscribe{
             $subscription->starts_at = Carbon::now()->addDays($period->trial_days)->toDateTimeString();
             $days = 0;
             if($period->is_recurring || $period->isLimitedNonRecurring()) {
+                //!ESTO ES INCORRECTO, SE DEBE SUMAR CON LOS METODOS DE CARBON PARA DIAS, MESES y AÑOS
+                //!EN MESES USAR monthOverflow COMO EN EL EJEMPLO https://try-carbon-package.herokuapp.com/?hide-output-gutter&output-left-padding=10&theme=tomorrow_night&border=none&radius=4&v-padding=15&input=%24dt%20%3D%20CarbonImmutable%3A%3Acreate(2017%2C%201%2C%2031%2C%200)%3B%0A%24dt-%3Esettings(%5B%0A%20%20%20%20%27monthOverflow%27%20%3D%3E%20false%2C%0A%5D)%3B%0A%0Aecho%20%24dt-%3EaddMonth()%3B%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%2F%2F%202017-02-28%2000%3A00%3A00%0Aecho%20%22%5Cn%22%3B%0Aecho%20%24dt-%3EsubMonths(2)%3B%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%2F%2F%202016-11-30%2000%3A00%3A00%0A&token=live-editor-38
                 if($period->period_unit == 'day') {
                     $days = $period->period_count;
                     $subscription->expires_at = Carbon::parse($subscription->starts_at)->addDays($days)->toDateTimeString();
