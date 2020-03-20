@@ -54,6 +54,15 @@ class Plan extends Model implements PlanInterface{
         return false;
     }
 
+    public function assignFeatureFeatureByCode(string $featureCode) {
+        $feature = $this->type->features()->featureType()->where('code', $featureCode)->first();
+        if($feature) {
+            $this->features()->attach($feature->id);
+            return true;
+        }
+        return false;
+    }
+
     public function getFeatureLimitByCode($featureCode) {
         $limit = $this->features()->limitType()->where('code', $featureCode)->first();
         if($limit) {

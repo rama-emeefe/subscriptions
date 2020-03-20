@@ -8,7 +8,6 @@ use Carbon\Carbon;
 
 class PlanSubscription extends Model implements PlanSubscriptionInterface{
 
-    //cast de fechas
     protected $casts = [
         'trial_starts_at' => 'datetime',
         'starts_at' => 'datetime',
@@ -64,7 +63,6 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
     }
 
     public function isActive() {
-        // var_dump($this->expires_at);
         if(!$this->isCanceled()) {
             $currentDay = Carbon::now();
             if($currentDay >= $this->starts_at && $currentDay < $this->expires_at || $this->expires_at == null) {
@@ -153,7 +151,7 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
     }
 
     public function hasFeature(string $featureCode) {
-        $feature = $this->plan_type->features()->where('code', $featureCode)->exists();
+        $feature = $this->features()->where('code', $featureCode)->exists();
         if($feature) {
             return true;
         }
@@ -162,11 +160,14 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
 
     public function consumeFeature(string $featureCode, int $units = 1) {
         $feature = $this->features()->limitType()->where('code', $featureCode)->first();
-        var_dump($feature);
         if($feature) {
+            $usage = $feature->pivot->usage;
             $limit = $feature->pivot->limit;
-            $feature->pivot->limit = $limit - $units;
-            return true;
+            if (($usage + $units) <= $limit) {
+                $feature->pivot->usage = $usage + $units;
+                $feature->pivot->save();
+                return true;
+            }
         }
         return false;
     }
@@ -174,18 +175,33 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
     public function unconsumeFeature(string $featureCode, int $units = 1) {
         $feature = $this->features()->limitType()->where('code', $featureCode)->first();
         if($feature) {
-            $limit = $feature->pivot->limit;
-            $feature->pivot->limit = $limit + $units;
-            return true;
+            $usage = $feature->pivot->usage;
+            if ($usage != 0 && ($usage - $units) >= 0) {
+                $feature->pivot->usage = $usage - $units;
+                $feature->pivot->save();
+                return true;
+            }
         }
         return false;
     }
 
     public function getUsageOf(string $featureCode) {
-
+        $feature = $this->features()->limitType()->where('code', $featureCode)->first();
+        if ($feature) {
+            $usage = $feature->pivot->usage;
+            return $usage;
+        }
+        return null;
     }
 
     public function getRemainingOf(string $featureCode) {
-
+        $feature = $this->features()->limitType()->where('code', $featureCode)->first();
+        if ($feature) {
+            $usage = $feature->pivot->usage;
+            $limit = $feature->pivot->limit;
+            $remaining = $limit - $usage;
+            return $remaining;
+        }
+        return null;
     }
 }

@@ -655,6 +655,8 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
 
         $plan = $this->createPlan('plan', $planType);
         $plan->assignFeatureLimitByCode('images_feature', 10);
+        $plan->assignFeatureFeatureByCode('premium_feature');
+        $plan->assignFeatureFeatureByCode('non_limit_assigned');
 
         $period = Subscriptions::period($this->faker->sentence(3), 'period', $plan)
             ->create();
@@ -670,12 +672,13 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
 
         $this->assertFalse($currentSubscription->unconsumeFeature('images_feature'));
         $this->assertTrue($currentSubscription->consumeFeature('images_feature', 3));
+        $this->assertEquals($currentSubscription->getUsageOf('images_feature'), 3);
         $this->assertEquals($currentSubscription->getRemainingOf('images_feature'), 7);
         $this->assertFalse($currentSubscription->consumeFeature('images_feature', 8));
         $this->assertEquals($currentSubscription->getRemainingOf('images_feature'), 7);
         $this->assertTrue($currentSubscription->unconsumeFeature('images_feature'));
         $this->assertTrue($currentSubscription->consumeFeature('images_feature', 8));
-        $this->assertTrue($currentSubscription->getUsageOf('images_feature'), 10);
+        $this->assertEquals($currentSubscription->getUsageOf('images_feature'), 10);
 
         $this->assertFalse($currentSubscription->unconsumeFeature('premium_feature'));
         $this->assertFalse($currentSubscription->consumeFeature('premium_feature', 3));
