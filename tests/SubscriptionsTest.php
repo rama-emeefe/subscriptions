@@ -56,7 +56,7 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
 
         $this->assertEquals($planType->features()->count(), 2);
         $this->assertTrue($planType->hasFeature('test_limit_feature'));
-        // $this->assertTrue($planType->hasFeature('test_unlimit_feature'));
+        $this->assertTrue($planType->hasFeature('test_unlimit_feature'));
         $this->assertFalse($planType->hasFeature('inexistent_feature'));
 
         $this->assertEquals($planType->getFeatureByCode('test_limit_feature')->id, $limitFeature->id);
@@ -70,9 +70,9 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
         $limitFeature = $this->createPlanFeature('test_limit_feature', 'limit');
 
         $planType = $this->createPlanType('user_plan');
-        $planType->attachFeature($limitFeature);
-            // ->attachFeature($limitFeature)
-            // ->attachFeature($limitFeature);
+        $planType->attachFeature($limitFeature)
+            ->attachFeature($limitFeature)
+            ->attachFeature($limitFeature);
 
         $this->assertEquals($planType->features()->count(), 1);
         $this->assertTrue($planType->hasFeature('test_limit_feature'));
@@ -416,7 +416,7 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
         $defaultPeriod->refresh();
 
         $this->assertTrue($nonDefaultPeriod->isDefault());
-        // $this->assertFalse($defaultPeriod->isDefault());
+        $this->assertFalse($defaultPeriod->isDefault());
     }
 
     /**
@@ -736,6 +736,7 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
      */
     public function createPlan(string $code, PlanType $type, bool $isDefault = false, $metadata = null, bool $isVisible = false){
         $exist = $type->plans()->where('code', $code)->exists();
+        //!QUITAR EL THROW
         if ($exist) {
             throw new RepeatedCodeException('Ya existe el codigo '.$code);
         } else {
@@ -751,8 +752,4 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
             return $plan;
         }        
     }
-
-    // public function createUser() {
-
-    // }
 }
