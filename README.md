@@ -416,9 +416,11 @@ Devuelve:
 - `true`: Cuando se pudo asignar el límite
 - `false`: Cuando no se pudo asignar el límite debido a que no existe el feature dentro del tipo de plan o el feature no es del tipo `limit`
 
-#### `getFeatureLimitByCode()`
+#### `getFeatureLimitByCode($featureCode)`
 
 Obtiene el límite de un feature del tipo `limit` a partir de su código
+
+- `$featureCode`: El código del feature
 
 Devuelve:
 
