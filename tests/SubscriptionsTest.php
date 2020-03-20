@@ -110,7 +110,7 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
     public function test_repeated_code_exception_in_same_type(){
         $this->expectException(RepeatedCodeException::class);
         $planType = $this->createPlanType();
-
+        
         $this->createPlan('test_code', $planType);
         $this->createPlan('test_code', $planType);
 
@@ -413,6 +413,7 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
         $this->assertTrue($defaultPeriod->isDefault());
 
         $nonDefaultPeriod->setAsDefault();
+        $nonDefaultPeriod->refresh();
         $defaultPeriod->refresh();
 
         $this->assertTrue($nonDefaultPeriod->isDefault());
@@ -735,21 +736,15 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
      * @return Emeefe\Subscriptions\Plan
      */
     public function createPlan(string $code, PlanType $type, bool $isDefault = false, $metadata = null, bool $isVisible = false){
-        $exist = $type->plans()->where('code', $code)->exists();
-        //!QUITAR EL THROW
-        if ($exist) {
-            throw new RepeatedCodeException('Ya existe el codigo '.$code);
-        } else {
-            $plan = new Plan();
-            $plan->display_name = $this->faker->sentence(3);
-            $plan->code = $code;
-            $plan->description = $this->faker->text();
-            $plan->plan_type_id = $type->id;
-            $plan->is_default = $isDefault;
-            $plan->metadata = $metadata;
-            $plan->is_visible = $isVisible;
-            $plan->save();
-            return $plan;
-        }        
+        $plan = new Plan();
+        $plan->display_name = $this->faker->sentence(3);
+        $plan->code = $code;
+        $plan->description = $this->faker->text();
+        $plan->plan_type_id = $type->id;
+        $plan->is_default = $isDefault;
+        $plan->metadata = $metadata;
+        $plan->is_visible = $isVisible;
+        $plan->save();
+        return $plan;       
     }
 }

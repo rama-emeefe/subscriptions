@@ -79,7 +79,7 @@ class Plan extends Model implements PlanInterface{
     }
 
     public function hasFeature(string $featureCode){
-        $feature = $this->type->features()->where('code', $featureCode)->first();
+        $feature = $this->type->features()->where('code', $featureCode)->exists();
         if($feature) {
             return true;
         }

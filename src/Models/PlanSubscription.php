@@ -109,18 +109,17 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
     public function renew(int $periods = 1) {
         if(!$this->isCanceled()) {
             if($this->is_recurring) {
-                $this->period_count = $periods;
                 $this->starts_at = Carbon::now();
                 if($this->period_unit == 'day') {
-                    $days = $this->period_count;
+                    $days = $periods;
                     $this->expires_at = Carbon::parse($this->starts_at)->addDays($days)->toDateTimeString();
                 }
                 if($this->period_unit == 'month') {
-                    $days = $this->period_count * 30;
+                    $days = $periods * 30;
                     $this->expires_at = Carbon::parse($this->starts_at)->addDays($days)->toDateTimeString();
                 }
                 if($this->period_unit == 'year') {
-                    $days = $this->period_count * 365;
+                    $days = $periods * 365;
                     $this->expires_at = Carbon::parse($this->starts_at)->addDays($days)->toDateTimeString();
                 }
                 if($this->period_unit == null) {

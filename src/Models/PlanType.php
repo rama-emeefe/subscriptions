@@ -17,22 +17,25 @@ class PlanType extends Model implements PlanTypeInterface{
         return $this->hasMany(PlanSubscription::class, 'plan_type_id');
     }
 
-    //!FALTA VERIFICAR SI EL FEATURE NO EXISTE YA, EN CASO DE EXISTIR NO HACE NADA MAS QUE DEVOLVERSE ASI MISMO
     public function attachFeature(PlanFeature $planFeature){
-        $this->features()->attach($planFeature->id);
+        if(!$this->hasFeature($planFeature->code)) {
+            $this->features()->attach($planFeature->id);
+        }
         return $this;
     }
 
-    //!!ESTO ES INCORRECTO YA QUE SOLO ESTÁS COMPARANDO CON EL PRIMER FEATURE
     public function hasFeature(string $featureCode){
-        if ($this->features()->first()->code != $featureCode) {
-            return false;
+        $feature = $this->features()->where('code', $featureCode)->exists();
+        if ($feature) {
+            return true;
         }
-        return true;
+        return false;
     }
+
     public function getFeatureByCode(string $featureCode){
         return PlanFeature::where('code', $featureCode)->get()->first();
     }
+
     public function getDefaultPlan(){
         $default_plan = $this->plans()->where('is_default',1)->first();
         return $default_plan;
