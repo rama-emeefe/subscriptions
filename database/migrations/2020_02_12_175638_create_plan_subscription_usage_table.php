@@ -12,7 +12,7 @@ class CreatePlanSubscriptionUsageTable extends Migration {
 	 */
 	public function up()
 	{
-		Schema::create('plan_subscription_usage', function(Blueprint $table)
+		Schema::create(config('subscriptions.tables.plan_subscription_usage'), function(Blueprint $table)
 		{
 			$table->integer('feature_id')->unsigned();
 			$table->integer('subscription_id')->unsigned()->index('fk_subscription_feature_subscription_idx');
@@ -30,7 +30,7 @@ class CreatePlanSubscriptionUsageTable extends Migration {
 	 */
 	public function down()
 	{
-		Schema::drop('plan_subscription_usage');
+		Schema::drop(config('subscriptions.tables.plan_subscription_usage'));
 	}
 
 }

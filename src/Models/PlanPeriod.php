@@ -10,12 +10,18 @@ class PlanPeriod extends Model implements PlanPeriodInterface{
     public const UNIT_MONTH = 'month';
     public const UNIT_YEAR = 'year';
     
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+        $this->setTable(config('subscriptions.tables.plan_periods'));
+    }
+
     public function plan() {
-        return $this->belongsTo(Plan::class, 'plan_id');
+        return $this->belongsTo(config('subscriptions.models.plan'), 'plan_id');
     }
 
     public function subscriptions() {
-        return $this->hasMany(PlanSubscription::class, 'period_id');
+        return $this->hasMany(config('subscriptions.models.subscription'), 'period_id');
     }
 
     public function scopeVisible($query) {
@@ -27,59 +33,35 @@ class PlanPeriod extends Model implements PlanPeriodInterface{
     }
 
     public function isRecurring() {
-        if($this->is_recurring) {
-            return true;
-        }
-        return false;
+        return $this->is_recurring;
     }
 
     public function isLimitedNonRecurring() {
-        if(!$this->is_recurring && $this->period_count != null) {
-            return true;
-        }
-        return false;
+        return !$this->is_recurring && $this->period_count != null;
     }
 
     public function isUnlimitedNonRecurring() {
-        if(!$this->is_recurring && $this->period_count == null) {
-            return true;
-        }
-        return false;
+        return !$this->is_recurring && $this->period_count == null;
     }
 
     public function isVisible() {
-        if($this->is_visible) {
-            return true;
-        }
-        return false;
+        return $this->is_visible;
     }
 
     public function isHidden() {
-        if(!$this->is_visible) {
-            return true;
-        }
-        return false;
+        return !$this->is_visible;
     }
 
     public function isDefault() {
-        if($this->is_default) {
-            return true;
-        }
-        return false;
+        return $this->is_default;
     }
 
     public function isFree() {
-        if($this->price == 0) {
-            return true;
-        }
-        return false;
+        return $this->price == 0;
     }
 
     public function hasTrial() {
-        if($this->trial_days != 0) {
-            return true;
-        }
-        return false;
+        return $this->trial_days != 0;
     }
 
     public function setAsVisible() {

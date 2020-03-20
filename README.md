@@ -420,15 +420,26 @@ Filtra features por tipo `feature`
 
 #### `assignFeatureLimitByCode(int $limit, string $featureCode)`
 
-Asigna el límite que tendrá un feature del tipo `limit` de un plan, en el caso de aún no tener límite asignado entonces lo asigna y para el caso en que ya ha sido definido un límite lo actualiza.
+Asigna un feature del tipo `limit` al plan así como su límite, en el caso de aún no tener límite asignado entonces lo asigna y para el caso en que ya ha sido definido un límite lo actualiza.
 
 - `$limit`: Límite a asignar, número mayor o igual a 1
 - `$featureCode`: Código del feature
 
 Devuelve:
 
-- `true`: Cuando se pudo asignar el límite
+- `true`: Cuando se pudo asignar el feature y límite
 - `false`: Cuando no se pudo asignar el límite debido a que no existe el feature dentro del tipo de plan o el feature no es del tipo `limit`
+
+#### `assignUnlimitFeatureByCode(string $featureCode)`
+
+Asigna un feature del tipo `feature` al plan.
+
+- `$featureCode`: Código del feature
+
+Devuelve:
+
+- `true`: Cuando se pudo asignar el feature
+- `false`: Cuando no se pudo asignar debido a que no existe el feature dentro del tipo de plan o el feature no es del tipo `feature`
 
 #### `getFeatureLimitByCode($featureCode)`
 
@@ -760,7 +771,7 @@ Filtra suscripciones recurrentes
 Este paquete ofrece muchas posibilidades que pueden manejarse de una mejor manera por medio de la escucha de eventos.
 
 `Emeefe\Subscriptions\Events\FeatureLimitChangeOnPlan`
-Se lanza cuando se actualiza el límite de un feature en un plan, no cuando es asignado por primera vez.
+Se lanza cuando se actualiza el límite de un feature en un plan, tanto para la primera vez que se asigna límite como también cuando se actualiza.
 
 - `$event->plan`: El plan al que se asigna el feature limit
 - `$event->feature`: El feature al que se le asignará el límite
@@ -771,6 +782,13 @@ Se lanza cuando un periodo de plan es actualizado en alguno de los campos `price
 
 - `$event->oldPlanPeriod`: Antiguo periodo de plan
 - `$event->newPlanPeriod`: Periodo de plan actualizado
+
+`Emeefe\Subscriptions\Events\NewFeatureOnPlan`
+Se lanza cuando un feature es asignado a un plan
+
+- `$event->plan`: Plan al que se asignó el feature
+- `$event->feature`: Feature asignado
+- `$event->limit`: Límite definido en caso de ser feature del tipo `limit`, en otro caso es `null`
 
 `Emeefe\Subscriptions\Events\NewSubscription`
 Se lanza cuando un modelo se suscribe a un plan por medio de un periodo
@@ -783,4 +801,24 @@ Se lanza cuando una suscripción es renovada/extendida
 
 - `$event->model`: El modelo al que pertenece la suscripción
 - `$event->subscription`: La suscripción que se renueva
-- `$event->`
+- `$event->cycles`: Cantidad de ciclos a renovar
+
+`Emeefe\Subscriptions\Events\CancelSubscription`
+Se lanza cuando una subscripción es cancelada, usando el método `cancel`
+
+- `$subscription`: La suscripción cancelada
+- `$reason`: El motivo de la cancelación proporcionado en `cancel($reason)`
+
+`Emeefe\Subscriptions\Events\FeatureConsumed`
+Se lanza cuando un feature de la suscripción es consumido
+
+- `$subscription`: Suscripción de la cuál se consume
+- `$model`: Modelo suscrito
+- `$units`: Unidades consumidas
+
+`Emeefe\Subscriptions\Events\FeatureUnconsumed`
+Se lanza cuando un feature de la suscripción es "desconsumido"
+
+- `$subscription`: Suscripción de la cuál se consume
+- `$model`: Modelo suscrito
+- `$units`: Unidades "desconsumidas"

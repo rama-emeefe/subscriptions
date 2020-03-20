@@ -13,7 +13,7 @@ trait CanSubscribe{
      * The subscriptions relationship
      */
     public function subscriptions(){
-        return $this->morphMany(PlanSubscription::class, 'subscriber');
+        return $this->morphMany(config('subscriptions.models.subscription'), 'subscriber');
     }
 
     /**
@@ -27,7 +27,8 @@ trait CanSubscribe{
         //TODO verificar si hay currentSubsciption y no esta cancelada devolver false
 
         if (!$this->currentSubscription($period->plan_id)) {
-            $subscription = new PlanSubscription();
+            $planSubscriptionModel = config('subscriptions.models.subscription');
+            $subscription = new $planSubscriptionModel();
             $subscription->period_id = $period->id;
             $subscription->subscriber_id = $this->id;
             $subscription->subscriber_type = get_class($this);

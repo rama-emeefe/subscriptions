@@ -211,6 +211,9 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
         $this->assertTrue($plan->assignFeatureLimitByCode('images_feature', 10));
         $this->assertFalse($plan->assignFeatureLimitByCode('premium_feature', 5));
         $this->assertFalse($plan->assignFeatureLimitByCode('inexistent_feature', 50));
+
+        $this->assertTrue($plan->assignUnlimitFeatureByCode('premium_feature'));
+        $this->assertFalse($plan->assignUnlimitFeatureByCode('images_feature'));
         
         $this->assertEquals($plan->getFeatureLimitByCode('images_feature'), 10);
         $this->assertTrue($plan->assignFeatureLimitByCode('images_feature', 15));
@@ -655,8 +658,8 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
 
         $plan = $this->createPlan('plan', $planType);
         $plan->assignFeatureLimitByCode('images_feature', 10);
-        $plan->assignFeatureFeatureByCode('premium_feature');
-        $plan->assignFeatureFeatureByCode('non_limit_assigned');
+        $plan->assignUnlimitFeatureByCode('premium_feature');
+        $plan->assignUnlimitFeatureByCode('non_limit_assigned');
 
         $period = Subscriptions::period($this->faker->sentence(3), 'period', $plan)
             ->create();

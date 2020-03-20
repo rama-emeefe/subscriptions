@@ -14,16 +14,22 @@ class PlanFeature extends Model implements PlanFeatureInterface{
         'metadata' => 'array'
     ];
 
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+        $this->setTable(config('subscriptions.tables.plan_features'));
+    }
+
     public function types() {
-        return $this->belongsToMany(PlanType::class, 'plan_type_fetaure', 'type_id', 'feature_id');
+        return $this->belongsToMany(config('subscriptions.models.type'), config('subscriptions.tables.plan_type_fetaure'), 'type_id', 'feature_id');
     }
 
     public function plans() {
-        return $this->belongsToMany(Plan::class, 'plan_feature_values', 'plan_id', 'plan_feature_id')->withPivot('limit');
+        return $this->belongsToMany(config('subscriptions.models.plan'), config('subscriptions.tables.plan_feature_values'), 'plan_id', 'plan_feature_id')->withPivot('limit');
     }
 
     public function subscriptions() {
-        return $this->belongsToMany(PlanSubscription::class, 'plan_subscription_usage', 'feature_id', 'subscription_id')->withPivot(['limit', 'usage']);
+        return $this->belongsToMany(config('subscriptions.models.subscription'), config('subscriptions.tables.plan_subscription_usage'), 'feature_id', 'subscription_id')->withPivot(['limit', 'usage']);
     }
 
     public function scopeLimitType($query) {

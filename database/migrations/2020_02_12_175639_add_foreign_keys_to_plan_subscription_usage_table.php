@@ -12,7 +12,7 @@ class AddForeignKeysToPlanSubscriptionUsageTable extends Migration {
 	 */
 	public function up()
 	{
-		Schema::table('plan_subscription_usage', function(Blueprint $table)
+		Schema::table(config('subscriptions.tables.plan_subscription_usage'), function(Blueprint $table)
 		{
 			$table->foreign('feature_id', 'fk_subscription_feature_feature')->references('id')->on('plan_features')->onUpdate('CASCADE')->onDelete('CASCADE');
 			$table->foreign('subscription_id', 'fk_subscription_feature_subscription')->references('id')->on('plan_subscriptions')->onUpdate('CASCADE')->onDelete('CASCADE');
@@ -27,7 +27,7 @@ class AddForeignKeysToPlanSubscriptionUsageTable extends Migration {
 	 */
 	public function down()
 	{
-		Schema::table('plan_subscription_usage', function(Blueprint $table)
+		Schema::table(config('subscriptions.tables.plan_subscription_usage'), function(Blueprint $table)
 		{
 			$table->dropForeign('fk_subscription_feature_feature');
 			$table->dropForeign('fk_subscription_feature_subscription');

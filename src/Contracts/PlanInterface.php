@@ -44,11 +44,21 @@ interface PlanInterface{
      * exists and a positive number greater than zero is 
      * provided, then returns true, otherwise returns false
      * 
-     * @param int $limit
      * @param string $featureCode
+     * @param int $limit
      * @return boolean
      */
     public function assignFeatureLimitByCode(string $featureCode, int $limit);
+
+    /**
+     * Assign the feature through the feature code 
+     * validating that the feature is of the type feature 
+     * and exists then returns true, otherwise returns false
+     * 
+     * @param string $featureCode
+     * @return boolean
+     */
+    public function assignUnlimitFeatureByCode(string $featureCode);
 
     /**
      * Get the limit of a feature with limit, if the feature 

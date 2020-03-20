@@ -15,8 +15,14 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
         'expires_at' => 'datetime'
     ];
 
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+        $this->setTable(config('subscriptions.tables.plan_subscriptions'));
+    }
+
     public function period(){
-        return $this->belongsTo(PlanPeriod::class, 'period_id');
+        return $this->belongsTo(config('subscriptions.models.period'), 'period_id');
     }
 
     public function subscriber() {
@@ -24,18 +30,15 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
     }
 
     public function plan_type() {
-        return $this->belongsTo(PlanType::class, 'plan_type_id');
+        return $this->belongsTo(config('subscriptions.models.type'), 'plan_type_id');
     }
 
     public function features() {
-        return $this->belongsToMany(PlanFeature::class, 'plan_subscription_usage', 'feature_id', 'subscription_id')->withPivot(['limit', 'usage']);
+        return $this->belongsToMany(config('subscriptions.models.feature'), config('subscriptions.tables.plan_subscription_usage'), 'feature_id', 'subscription_id')->withPivot(['limit', 'usage']);
     }
 
     public function hasType(string $type) {
-        if ($this->plan_type->type == $type) {
-            return true;
-        }
-        return false;
+        return $this->plan_type->type == $type;
     }
 
     public function scopeByType($query, PlanType $planType) {
@@ -56,10 +59,7 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
 
     public function isOnTrial() {
         $currentDay = Carbon::now();
-        if($currentDay >= Carbon::parse($this->trial_starts_at) && $currentDay < Carbon::parse($this->starts_at)) {
-            return true;
-        }
-        return false;
+        return $currentDay >= Carbon::parse($this->trial_starts_at) && $currentDay < Carbon::parse($this->starts_at);
     }
 
     public function isActive() {
@@ -73,10 +73,7 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
     }
 
     public function isValid() {
-        if($this->isOnTrial() || $this->isActive() || $this->isExpiredWithTolerance()) {
-            return true;
-        }
-        return false;
+        return $this->isOnTrial() || $this->isActive() || $this->isExpiredWithTolerance();
     }
 
     public function isExpiredWithTolerance() {
@@ -91,10 +88,7 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
     }
 
     public function isFullExpired() {
-        if( $this->isExpiredWithTolerance() || $this->isActive() || $this->isOnTrial()) {
-            return false;
-        }
-        return true;
+        return ! ($this->isExpiredWithTolerance() || $this->isActive() || $this->isOnTrial());
     }
 
     public function remainingTrialDays() {
@@ -151,11 +145,7 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
     }
 
     public function hasFeature(string $featureCode) {
-        $feature = $this->features()->where('code', $featureCode)->exists();
-        if($feature) {
-            return true;
-        }
-        return false;
+        return $this->features()->where('code', $featureCode)->exists();
     }
 
     public function consumeFeature(string $featureCode, int $units = 1) {
