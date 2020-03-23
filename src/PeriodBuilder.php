@@ -9,7 +9,8 @@ class PeriodBuilder implements PeriodBuilderInterface{
     private $period;
 
     public function __construct($displayName, $code, $plan){
-        $this->period = new PlanPeriod();
+        $planPeriodModel = config('subscriptions.models.period');
+        $this->period = new $planPeriodModel();
         $this->period->display_name = $displayName;
         $this->period->code = $code;
         $this->period->price = 0;

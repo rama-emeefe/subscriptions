@@ -12,16 +12,22 @@ class Plan extends Model implements PlanInterface{
         'is_default' => 'boolean'
     ];
 
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+        $this->setTable(config('subscriptions.tables.plans'));
+    }
+
     public function type(){
-        return $this->belongsTo(PlanType::class, 'plan_type_id');
+        return $this->belongsTo(config('subscriptions.models.type'), 'plan_type_id');
     }
 
     public function features(){
-        return $this->belongsToMany(PlanFeature::class, 'plan_feature_values', 'plan_id', 'plan_feature_id')->withPivot('limit');
+        return $this->belongsToMany(config('subscriptions.models.feature'), config('subscriptions.tables.plan_feature_values'), 'plan_id', 'plan_feature_id')->withPivot('limit');
     }
 
     public function periods() {
-        return $this->hasMany(PlanPeriod::class, 'plan_id');
+        return $this->hasMany(config('subscriptions.models.period'), 'plan_id');
     }
 
     public function scopeByType($query, string $type){
@@ -54,7 +60,7 @@ class Plan extends Model implements PlanInterface{
         return false;
     }
 
-    public function assignFeatureFeatureByCode(string $featureCode) {
+    public function assignUnlimitFeatureByCode(string $featureCode) {
         $feature = $this->type->features()->featureType()->where('code', $featureCode)->first();
         if($feature) {
             $this->features()->attach($feature->id);
@@ -79,32 +85,19 @@ class Plan extends Model implements PlanInterface{
     }
 
     public function hasFeature(string $featureCode){
-        $feature = $this->type->features()->where('code', $featureCode)->exists();
-        if($feature) {
-            return true;
-        }
-        return false;
+        return $this->features()->where('code', $featureCode)->exists();
     }
 
     public function isVisible() {
-        if($this->is_visible) {
-            return true;
-        }
-        return false;
+        return $this->is_visible;
     }
 
     public function isHidden() {
-        if($this->is_visible) {
-            return false;
-        }
-        return true;
+        return !$this->is_visible;
     }
 
     public function isDefault() {
-        if($this->is_default) {
-            return true;
-        }
-        return false;
+        return $this->is_default;
     }
 
     public function setAsVisible() {

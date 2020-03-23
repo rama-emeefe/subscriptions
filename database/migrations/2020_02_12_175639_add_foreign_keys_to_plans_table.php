@@ -12,7 +12,7 @@ class AddForeignKeysToPlansTable extends Migration {
 	 */
 	public function up()
 	{
-		Schema::table('plans', function(Blueprint $table)
+		Schema::table(config('subscriptions.tables.plans'), function(Blueprint $table)
 		{
 			$table->foreign('plan_type_id', 'fk_plans_plan_types')->references('id')->on('plan_types')->onUpdate('CASCADE')->onDelete('RESTRICT');
 		});
@@ -26,7 +26,7 @@ class AddForeignKeysToPlansTable extends Migration {
 	 */
 	public function down()
 	{
-		Schema::table('plans', function(Blueprint $table)
+		Schema::table(config('subscriptions.tables.plans'), function(Blueprint $table)
 		{
 			$table->dropForeign('fk_plans_plan_types');
 		});

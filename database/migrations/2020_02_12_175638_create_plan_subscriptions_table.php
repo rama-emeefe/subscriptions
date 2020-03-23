@@ -12,7 +12,7 @@ class CreatePlanSubscriptionsTable extends Migration {
 	 */
 	public function up()
 	{
-		Schema::create('plan_subscriptions', function(Blueprint $table)
+		Schema::create(config('subscriptions.tables.plan_subscriptions'), function(Blueprint $table)
 		{
 			$table->increments('id');
 			$table->integer('period_id')->unsigned()->index('fk_plan_subscriptions_plan_periods_idx');
@@ -43,7 +43,7 @@ class CreatePlanSubscriptionsTable extends Migration {
 	 */
 	public function down()
 	{
-		Schema::drop('plan_subscriptions');
+		Schema::drop(config('subscriptions.tables.plan_subscriptions'));
 	}
 
 }

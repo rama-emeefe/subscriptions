@@ -33,6 +33,7 @@ class SubscriptionsServiceProvider extends ServiceProvider
         Plan::observe(PlanObserver::class);
         PlanPeriod::observe(PlanPeriodObserver::class);
         $this->publishMigrations();
+        $this->publishConfig();
     }
 
     private function registerSubscriptionsPackage(){
@@ -47,5 +48,11 @@ class SubscriptionsServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../database/migrations/' => database_path('migrations')
         ], 'migrations');
+    }
+
+    private function publishConfig(){
+        $this->publishes([
+            __DIR__.'/../config/subscriptions.php' => config_path('subscriptions.php'),
+        ]);
     }
 }

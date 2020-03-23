@@ -5,16 +5,23 @@ use Illuminate\Database\Eloquent\Model;
 use Emeefe\Subscriptions\Contracts\PlanTypeInterface;
 
 class PlanType extends Model implements PlanTypeInterface{
+    //!SI DEBE TENER TIMESTAMPS
     public $timestamps = false;
 
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+        $this->setTable(config('subscriptions.tables.plan_types'));
+    }
+
     public function features(){
-        return $this->belongsToMany(PlanFeature::class, 'plan_type_fetaure', 'type_id', 'feature_id');
+        return $this->belongsToMany(config('subscriptions.models.feature'), config('subscriptions.tables.plan_type_feature'), 'type_id', 'feature_id');
     }
     public function plans(){
-        return $this->hasMany(Plan::class, 'plan_type_id');
+        return $this->hasMany(config('subscriptions.models.plan'), 'plan_type_id');
     }
     public function subscriptions(){
-        return $this->hasMany(PlanSubscription::class, 'plan_type_id');
+        return $this->hasMany(config('subscriptions.models.subscription'), 'plan_type_id');
     }
 
     public function attachFeature(PlanFeature $planFeature){
@@ -33,7 +40,8 @@ class PlanType extends Model implements PlanTypeInterface{
     }
 
     public function getFeatureByCode(string $featureCode){
-        return PlanFeature::where('code', $featureCode)->get()->first();
+        $planFeatureModel = config('subscriptions.models.feature');
+        return $planFeatureModel::where('code', $featureCode)->get()->first();
     }
 
     public function getDefaultPlan(){
