@@ -107,24 +107,43 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
     }
 
     public function renew(int $periods = 1) {
+        // fecha inicio -> 31-01-2020 13:40:00
+        // fecha expiracion -> 29-02-2020 13:40:00
+
+        // $periods = 1
+
+        // no se actualiza fecha de inicio ya que guarda dia de pago
+        // actualizar fecha expiracion -> 31-03-2020 
+
+        // $periods = 1
+
+        // actualizar fecha expiracion -> 30-04-2020
+
+        // $periods =  1
+
+        // actualizar fecha expiracion -> 31-05-2020 
+
         if(!$this->isCanceled()) {
             if($this->is_recurring) {
-                $this->starts_at = Carbon::now();
+                $dt = Carbon::parse($this->expires_at);
+                $count = $periods * $this->period_count;
+                $dt->settings([
+                    'monthOverflow' => false,
+                ]);
                 if($this->period_unit == 'day') {
-                    $days = $periods;
-                    $this->expires_at = Carbon::parse($this->starts_at)->addDays($days)->toDateTimeString();
+                    $this->expires_at = $dt->addDays($count)->toDateTimeString();
                 }
                 if($this->period_unit == 'month') {
-                    $days = $periods * 30;
-                    $this->expires_at = Carbon::parse($this->starts_at)->addDays($days)->toDateTimeString();
+                    $this->expires_at = $dt->addMonths($count)->toDateTimeString();
                 }
                 if($this->period_unit == 'year') {
-                    $days = $periods * 365;
-                    $this->expires_at = Carbon::parse($this->starts_at)->addDays($days)->toDateTimeString();
+                    $this->expires_at = $dt->addYears($count)->toDateTimeString();
                 }
                 if($this->period_unit == null) {
                     $this->expires_at = null;
                 }
+
+                //actualizar dia de expiracion
                 $this->save();
                 return true;
             }
