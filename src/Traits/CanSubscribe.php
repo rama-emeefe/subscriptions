@@ -24,8 +24,12 @@ trait CanSubscribe{
      * @return boolean 
      */
     public function subscribeTo(PlanPeriod $period, int $periodCount = 1){
-        //TODO verificar si hay currentSubsciption y no esta cancelada devolver false
+        $currentSubscription = $this->currentSubscription($period->plan->type);
+        if($currentSubscription && !$currentSubscription->isCanceled()){
+            return false;
+        }
 
+        //!SE AGREGO LA VALIDACION DE ARRIBA POR LO QUE YA NO HACE FALTA CHECAR LA CONDICION DE ABAJO
 // period -> 1 mes
 // periodCount -> 1
 
