@@ -726,6 +726,36 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
         $this->assertSame($currentSubscription->expires_at->format('Y-m-d H:i'), '2020-05-31 12:00');
     }
 
+    /**
+     * Test renew subscription
+     */
+    public function test_dates_not_end_month_subscription_and_renew(){
+        Carbon::setTestNow(Carbon::create(2020, 1, 29, 12, 0, 0)); //29 Jan 2020 12:00:00
+
+        $planType = $this->createPlanType('user_membership');
+        $plan = $this->createPlan('plan', $planType);
+        $period = Subscriptions::period($this->faker->sentence(3), 'period', $plan)
+            ->setRecurringPeriod(1, PlanPeriod::UNIT_MONTH)
+            ->setTrialDays(0)
+            ->setToleranceDays(0)
+            ->create();
+
+        $user = $this->createUser();
+        $user->subscribeTo($period);
+        $currentSubscription = $user->currentSubscription($planType);
+
+        $this->assertSame($currentSubscription->starts_at->format('Y-m-d H:i'), '2020-01-29 12:00');
+        $this->assertSame($currentSubscription->expires_at->format('Y-m-d H:i'), '2020-02-29 12:00');
+
+        $currentSubscription->renew(2);
+
+        $this->assertSame($currentSubscription->expires_at->format('Y-m-d H:i'), '2020-04-29 12:00');
+
+        $currentSubscription->renew(1);
+
+        $this->assertSame($currentSubscription->expires_at->format('Y-m-d H:i'), '2020-05-29 12:00');
+    }
+
 
     /**
      * Create a PlanType instance
