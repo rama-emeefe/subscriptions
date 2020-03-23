@@ -26,6 +26,22 @@ trait CanSubscribe{
     public function subscribeTo(PlanPeriod $period, int $periodCount = 1){
         //TODO verificar si hay currentSubsciption y no esta cancelada devolver false
 
+// period -> 1 mes
+// periodCount -> 1
+
+// calcular 1 meses
+// fecha inicio -> 31-01-2020 13:40:00
+// fecha expiracion -> 29-02-2020 13:40:00
+// --------------------------------------
+// period -> 1 mes
+// periodCount -> 1
+
+// calcular 1 meses
+// fecha inicio -> 28-02-2020 13:40:00
+// fecha expiracion -> 31-03-2020 13:40:00 y validar dia 
+//                     28-03-2020
+
+
         if (!$this->currentSubscription($period->plan_id)) {
             $planSubscriptionModel = config('subscriptions.models.subscription');
             $subscription = new $planSubscriptionModel();
@@ -34,21 +50,22 @@ trait CanSubscribe{
             $subscription->subscriber_type = get_class($this);
             $subscription->trial_starts_at = Carbon::now()->toDateTimeString();
             $subscription->starts_at = Carbon::now()->addDays($period->trial_days)->toDateTimeString();
-            $days = 0;
             if($period->is_recurring || $period->isLimitedNonRecurring()) {
                 //!ESTO ES INCORRECTO, SE DEBE SUMAR CON LOS METODOS DE CARBON PARA DIAS, MESES y AÑOS
                 //!EN MESES USAR monthOverflow COMO EN EL EJEMPLO https://try-carbon-package.herokuapp.com/?hide-output-gutter&output-left-padding=10&theme=tomorrow_night&border=none&radius=4&v-padding=15&input=%24dt%20%3D%20CarbonImmutable%3A%3Acreate(2017%2C%201%2C%2031%2C%200)%3B%0A%24dt-%3Esettings(%5B%0A%20%20%20%20%27monthOverflow%27%20%3D%3E%20false%2C%0A%5D)%3B%0A%0Aecho%20%24dt-%3EaddMonth()%3B%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%2F%2F%202017-02-28%2000%3A00%3A00%0Aecho%20%22%5Cn%22%3B%0Aecho%20%24dt-%3EsubMonths(2)%3B%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%2F%2F%202016-11-30%2000%3A00%3A00%0A&token=live-editor-38
+                $dt = Carbon::parse($subscription->starts_at);
+                $dt->settings([
+                    'monthOverflow' => false,
+                ]);
+                $count = $periodCount * $period->period_count;
                 if($period->period_unit == 'day') {
-                    $days = $period->period_count;
-                    $subscription->expires_at = Carbon::parse($subscription->starts_at)->addDays($days)->toDateTimeString();
+                    $subscription->expires_at = $dt->addDays($count)->toDateTimeString();
                 }
                 if($period->period_unit == 'month') {
-                    $days = $period->period_count * 30;
-                    $subscription->expires_at = Carbon::parse($subscription->starts_at)->addDays($days)->toDateTimeString();
+                    $subscription->expires_at = $dt->addMonths($count)->toDateTimeString();
                 }
                 if($period->period_unit == 'year') {
-                    $days = $period->period_count * 365;
-                    $subscription->expires_at = Carbon::parse($subscription->starts_at)->addDays($days)->toDateTimeString();
+                    $subscription->expires_at = $dt->addYears($count)->toDateTimeString();
                 }
                 if($period->period_unit == null) {
                     $subscription->expires_at = null;
@@ -63,7 +80,7 @@ trait CanSubscribe{
             $subscription->tolerance_days = $period->tolerance_days;
             $subscription->currency = $period->currency;
             $subscription->period_unit = $period->period_unit;
-            $subscription->period_count = $periodCount;
+            $subscription->period_count = $period->period_count;
             $subscription->is_recurring = $period->is_recurring;
             $subscription->save();
 

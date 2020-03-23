@@ -7,7 +7,9 @@ use Illuminate\Foundation\AliasLoader;
 use Emeefe\Subscriptions\Subscriptions;
 use Emeefe\Subscriptions\SubscriptionsFacade;
 use Emeefe\Subscriptions\Observers\PlanObserver;
+use Emeefe\Subscriptions\Observers\PlanPeriodObserver;
 use Emeefe\Subscriptions\Models\Plan;
+use Emeefe\Subscriptions\Models\PlanPeriod;
 
 class SubscriptionsServiceProvider extends ServiceProvider
 {
@@ -29,6 +31,7 @@ class SubscriptionsServiceProvider extends ServiceProvider
     public function boot()
     {
         Plan::observe(PlanObserver::class);
+        PlanPeriod::observe(PlanPeriodObserver::class);
         $this->publishMigrations();
         $this->publishConfig();
     }

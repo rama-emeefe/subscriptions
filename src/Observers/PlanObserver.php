@@ -2,6 +2,8 @@
 
 namespace Emeefe\Subscriptions\Observers;
 use Emeefe\Subscriptions\Models\Plan;
+use Emeefe\Subscriptions\Exceptions\RepeatedCodeException;
+
 
 class PlanObserver
 {
@@ -20,6 +22,11 @@ class PlanObserver
                 $oldDefaultPlan->save();
             }
         }
+
+        if($plan->type->plans()->where('code', $plan->code)->exists()) {
+            throw new RepeatedCodeException('Ya existe el codigo '.$plan->code);
+        }
+
     }
 
     /**
