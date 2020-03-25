@@ -101,22 +101,6 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
     }
 
     public function renew(int $periods = 1) {
-        // fecha inicio -> 31-01-2020 13:40:00
-        // fecha expiracion -> 29-02-2020 13:40:00
-
-        // $periods = 1
-
-        // no se actualiza fecha de inicio ya que guarda dia de pago
-        // actualizar fecha expiracion -> 31-03-2020 
-
-        // $periods = 1
-
-        // actualizar fecha expiracion -> 30-04-2020
-
-        // $periods =  1
-
-        // actualizar fecha expiracion -> 31-05-2020 
-
         if(!$this->isCanceled()) {
             if($this->is_recurring) {
                 $dt = Carbon::parse($this->expires_at);
@@ -128,7 +112,18 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
                     $this->expires_at = $dt->addDays($count)->toDateTimeString();
                 }
                 if($this->period_unit == 'month') {
-                    $this->expires_at = $dt->addMonths($count)->toDateTimeString();
+                    $dts = Carbon::parse($this->starts_at);
+                    $dt = $dt->addMonths($count);
+                    if($dts->day == 30 || $dts->day == 31) {
+                        if($dt->day == 29) {
+                            $dt = $dt->addDay();
+                        } else if($dt->day == 30) {
+                            if($dt->addDay()->day == 31) {
+                                $dt = $dt;
+                            }
+                        }
+                    }
+                    $this->expires_at = $dt->toDateTimeString();
                 }
                 if($this->period_unit == 'year') {
                     $this->expires_at = $dt->addYears($count)->toDateTimeString();
@@ -136,8 +131,6 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
                 if($this->period_unit == null) {
                     $this->expires_at = null;
                 }
-
-                //actualizar dia de expiracion
                 $this->save();
                 return true;
             }

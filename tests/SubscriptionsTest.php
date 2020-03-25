@@ -109,11 +109,11 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
      */
     public function test_repeated_code_exception_in_same_type(){
         $this->expectException(RepeatedCodeException::class);
+
         $planType = $this->createPlanType();
         
         $this->createPlan('test_code', $planType);
         $this->createPlan('test_code', $planType);
-
     }
 
     /**

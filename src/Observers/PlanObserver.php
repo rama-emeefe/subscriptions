@@ -24,6 +24,7 @@ class PlanObserver
         }
 
         if($plan->type->plans()->where('code', $plan->code)->exists()) {
+            echo "CODE:".$plan->code;
             throw new RepeatedCodeException('Ya existe el codigo '.$plan->code);
         }
 

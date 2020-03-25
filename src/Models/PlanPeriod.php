@@ -53,7 +53,11 @@ class PlanPeriod extends Model implements PlanPeriodInterface{
     }
 
     public function isDefault() {
-        return $this->is_default;
+        if ($this->is_default) {
+            return true;
+        }
+        return false;
+        // return $this->is_default;
     }
 
     public function isFree() {
