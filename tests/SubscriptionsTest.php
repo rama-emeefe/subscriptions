@@ -163,7 +163,7 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
         $planType = $this->createPlanType();
         $isDefault = true;
 
-        $firstDefaultPlan = $this->createPlan('first_plan', $planType, $isDefault);
+        $firstDefaultPlan = $this->createPlan('first1_plan', $planType, $isDefault);
         $this->assertEquals($planType->getDefaultPlan()->id, $firstDefaultPlan->id);
 
         $secondDefaultPlan = $this->createPlan('second_plan', $planType, $isDefault);

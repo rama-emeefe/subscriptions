@@ -7,6 +7,8 @@ use Emeefe\Subscriptions\Contracts\PlanInterface;
 
 class Plan extends Model implements PlanInterface{
 
+    protected $fillable = ['is_default'];
+
     protected $casts = [
         'metadata' => 'array',
         'is_default' => 'boolean'
