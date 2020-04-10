@@ -11,6 +11,16 @@ use Emeefe\Subscriptions\Models\Plan;
 use Emeefe\Subscriptions\Models\PlanPeriod;
 use Emeefe\Subscriptions\Exceptions\RepeatedCodeException;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Event;
+use Emeefe\Subscriptions\Events\CancelSubscription;
+use Emeefe\Subscriptions\Events\FeatureConsumed;
+use Emeefe\Subscriptions\Events\FeatureLimitChangeOnPlan;
+use Emeefe\Subscriptions\Events\FeatureUnconsumed;
+use Emeefe\Subscriptions\Events\NewFeatureOnPlan;
+use Emeefe\Subscriptions\Events\NewSubscription;
+use Emeefe\Subscriptions\Events\PlanPeriodChange;
+use Emeefe\Subscriptions\Events\RenewSubscription;
+
 
 class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
 {
@@ -195,6 +205,8 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
      * without limits
      */
     public function test_attach_features_to_plan(){
+        Event::fake();
+
         $planType = $this->createPlanType();
         
         $imagesFeature = $this->createPlanFeature('images_feature', 'limit');
@@ -208,7 +220,10 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
         $plan->refresh();
         $this->assertFalse($plan->assignFeatureLimitByCode('images_feature', -2));
         $this->assertFalse($plan->assignFeatureLimitByCode('images_feature', 0));
+
         $this->assertTrue($plan->assignFeatureLimitByCode('images_feature', 10));
+        Event::assertDispatched(NewFeatureOnPlan::class);
+
         $this->assertFalse($plan->assignFeatureLimitByCode('premium_feature', 5));
         $this->assertFalse($plan->assignFeatureLimitByCode('inexistent_feature', 50));
 
@@ -217,6 +232,7 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
         
         $this->assertEquals($plan->getFeatureLimitByCode('images_feature'), 10);
         $this->assertTrue($plan->assignFeatureLimitByCode('images_feature', 15));
+        Event::assertDispatched(FeatureLimitChangeOnPlan::class);
         $plan->refresh();
         
         $this->assertEquals($plan->getFeatureLimitByCode('images_feature'), 15);
@@ -380,6 +396,8 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
      * Test tolerance days allocation for a period
      */
     public function test_plan_period_builder_tolerance_days(){
+        // Event::fake();
+
         $planType = $this->createPlanType();
         $plan = $this->createPlan('plan', $planType);
 
@@ -393,10 +411,16 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
         //Correct tolerance days
         $planCorrectTolerancePeriod = Subscriptions::period($this->faker->sentence(3), 'period', $plan)
             ->setLimitedNonRecurringPeriod(12, PlanPeriod::UNIT_MONTH)
+            ->setPrice(5.0)
             ->setToleranceDays(5)
+            ->setTrialDays(8)
             ->create();
 
         $this->assertEquals($planCorrectTolerancePeriod->tolerance_days, 5);
+        $planCorrectTolerancePeriod->setAsVisible();
+        // $planCorrectTolerancePeriod->setAsHidden();
+        // Event::assertDispatched(PlanPeriodChange::class);
+
     }
 
     /**
@@ -428,6 +452,8 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
      * test existence
      */
     public function test_unique_not_cancelled_subscription_in_plan_type(){
+        Event::fake();
+
         $planType = $this->createPlanType('user_membership');
         $plan = $this->createPlan('plan', $planType);
         $periodOne = Subscriptions::period($this->faker->sentence(3), 'period_one', $plan)
@@ -438,6 +464,8 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
         $user = $this->createUser();
 
         $this->assertTrue($user->subscribeTo($periodOne));
+        Event::assertDispatched(NewSubscription::class);
+
         $this->assertFalse($user->subscribeTo($periodTwo));
         $this->assertTrue($user->hasSubscription($planType));
         $this->assertTrue($user->hasSubscription('user_membership'));
@@ -503,6 +531,7 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
      * Renew                -> 2020, 4, 9, 12, 0
      */
     public function test_recurring_subscription_status_trial_and_tolerance(){
+        Event::fake();
         Carbon::setTestNow(Carbon::create(2020, 1, 1, 12, 0, 0));
 
         $planType = $this->createPlanType('user_membership');
@@ -546,6 +575,7 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
         $this->assertTrue($currentSubscription->isFullExpired());
 
         $this->assertTrue($currentSubscription->renew(2));
+        Event::assertDispatched(RenewSubscription::class);
 
         $this->assertTrue($currentSubscription->isActive());
         $this->assertTrue($currentSubscription->isValid());
@@ -555,6 +585,8 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
         Carbon::setTestNow(Carbon::create(2020, 4, 9, 12, 0, 2));
 
         $this->assertTrue($currentSubscription->cancel('non-payment'));
+        Event::assertDispatched(CancelSubscription::class);
+
         $this->assertTrue($currentSubscription->isCanceled());
         $this->assertTrue($currentSubscription->isFullExpired());
 
@@ -648,6 +680,7 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
      * Test non recurring ilimited subscription 
      */
     public function test_subscription_features(){
+        Event::fake();
         $imagesFeature = $this->createPlanFeature('images_feature', 'limit');
         $premiumFeature = $this->createPlanFeature('premium_feature');
         $nonLimitAssignedFeature = $this->createPlanFeature('non_limit_assigned');
@@ -676,11 +709,15 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
 
         $this->assertFalse($currentSubscription->unconsumeFeature('images_feature'));
         $this->assertTrue($currentSubscription->consumeFeature('images_feature', 3));
+        Event::assertDispatched(FeatureConsumed::class);
+
         $this->assertEquals($currentSubscription->getUsageOf('images_feature'), 3);
         $this->assertEquals($currentSubscription->getRemainingOf('images_feature'), 7);
         $this->assertFalse($currentSubscription->consumeFeature('images_feature', 8));
         $this->assertEquals($currentSubscription->getRemainingOf('images_feature'), 7);
         $this->assertTrue($currentSubscription->unconsumeFeature('images_feature'));
+        Event::assertDispatched(FeatureUnconsumed::class);
+
         $this->assertTrue($currentSubscription->consumeFeature('images_feature', 8));
         $this->assertEquals($currentSubscription->getUsageOf('images_feature'), 10);
 

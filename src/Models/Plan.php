@@ -4,6 +4,9 @@ namespace Emeefe\Subscriptions\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Emeefe\Subscriptions\Contracts\PlanInterface;
+use Emeefe\Subscriptions\Events\FeatureLimitChangeOnPlan;
+use Emeefe\Subscriptions\Events\NewFeatureOnPlan;
+
 
 class Plan extends Model implements PlanInterface{
 
@@ -52,9 +55,11 @@ class Plan extends Model implements PlanInterface{
                 if($existentFeature){
                     $existentFeature->pivot->limit = $limit;
                     $existentFeature->pivot->save();
+                    event(new FeatureLimitChangeOnPlan($this, $existentFeature, $limit));
                     return true;
                 } else {
                     $this->features()->attach($feature->id, ['limit' => $limit]);
+                    event(new NewFeatureOnPlan($this, $feature, $limit));
                     return true;
                 }
             }
@@ -66,6 +71,7 @@ class Plan extends Model implements PlanInterface{
         $feature = $this->type->features()->featureType()->where('code', $featureCode)->first();
         if($feature) {
             $this->features()->attach($feature->id);
+            event(new NewFeatureOnPlan($this, $feature, null));
             return true;
         }
         return false;

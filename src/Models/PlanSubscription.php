@@ -5,6 +5,10 @@ namespace Emeefe\Subscriptions\Models;
 use Illuminate\Database\Eloquent\Model;
 use Emeefe\Subscriptions\Contracts\PlanSubscriptionInterface;
 use Carbon\Carbon;
+use Emeefe\Subscriptions\Events\RenewSubscription;
+use Emeefe\Subscriptions\Events\CancelSubscription;
+use Emeefe\Subscriptions\Events\FeatureConsumed;
+use Emeefe\Subscriptions\Events\FeatureUnconsumed;
 
 class PlanSubscription extends Model implements PlanSubscriptionInterface{
 
@@ -132,6 +136,7 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
                     $this->expires_at = null;
                 }
                 $this->save();
+                event(new RenewSubscription($this->subscriber(), $this, $periods));
                 return true;
             }
         }
@@ -143,6 +148,7 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
             $this->cancelled_at = Carbon::now()->toDateTimeString();
             $this->cancellation_reason = $reason;
             $this->save();
+            event(new CancelSubscription($this, $reason));
             return true;
         }
         return false;
@@ -167,6 +173,7 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
             if (($usage + $units) <= $limit) {
                 $feature->pivot->usage = $usage + $units;
                 $feature->pivot->save();
+                event(new FeatureConsumed($this, $this->subscriber(), $units));
                 return true;
             }
         }
@@ -180,6 +187,7 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
             if ($usage != 0 && ($usage - $units) >= 0) {
                 $feature->pivot->usage = $usage - $units;
                 $feature->pivot->save();
+                event(new FeatureUnconsumed($this, $this->subscriber(), $units));
                 return true;
             }
         }

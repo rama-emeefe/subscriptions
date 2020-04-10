@@ -2,6 +2,8 @@
 
 namespace Emeefe\Subscriptions\Observers;
 use Emeefe\Subscriptions\Models\PlanPeriod;
+use Emeefe\Subscriptions\Events\PlanPeriodChange;
+
 
 class PlanPeriodObserver
 {
@@ -42,6 +44,39 @@ class PlanPeriodObserver
     public function updated(PlanPeriod  $planPeriod)
     {
         //
+    }
+
+    /**
+     * Handle the plan "updating" event.
+     *
+     * @param  PlanPeriod  $planPeriod
+     * @return void
+     */
+    public function updating(PlanPeriod  $planPeriod)
+    {
+        $oldPlanPeriod = $planPeriod->plan->periods()->where('id', $planPeriod->id)->first();
+
+        if($oldPlanPeriod) {
+            $oldPlanPeriodString = $oldPlanPeriod->price
+                                    .$oldPlanPeriod->currency
+                                    .$oldPlanPeriod->trial_days
+                                    .$oldPlanPeriod->period_unit
+                                    .$oldPlanPeriod->period_count
+                                    .$oldPlanPeriod->is_recurring
+                                    .$oldPlanPeriod->is_visible
+                                    .$oldPlanPeriod->tolerance_days;
+            $newPlanPeriodString = $planPeriod->price
+                                    .$planPeriod->currency
+                                    .$planPeriod->trial_days
+                                    .$planPeriod->period_unit
+                                    .$planPeriod->period_count
+                                    .$planPeriod->is_recurring
+                                    .$planPeriod->is_visible
+                                    .$planPeriod->tolerance_days;
+            if ($oldPlanPeriodString != $newPlanPeriodString) {
+                event(new PlanPeriodChange($oldPlanPeriod, $planPeriod));
+            }
+        }
     }
 
     /**
