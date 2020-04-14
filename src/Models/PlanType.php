@@ -5,8 +5,6 @@ use Illuminate\Database\Eloquent\Model;
 use Emeefe\Subscriptions\Contracts\PlanTypeInterface;
 
 class PlanType extends Model implements PlanTypeInterface{
-    //!SI DEBE TENER TIMESTAMPS
-    public $timestamps = false;
 
     public function __construct(array $attributes = [])
     {
@@ -18,7 +16,7 @@ class PlanType extends Model implements PlanTypeInterface{
         return $this->belongsToMany(config('subscriptions.models.feature'), config('subscriptions.tables.plan_type_feature'), 'type_id', 'feature_id');
     }
     public function plans(){
-        return $this->hasMany(config('subscriptions.models.plan'), 'plan_type_id');
+        return $this->hasMany(config('subscriptions.models.plan'), 'type_id');
     }
     public function subscriptions(){
         return $this->hasMany(config('subscriptions.models.subscription'), 'plan_type_id');

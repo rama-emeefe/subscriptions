@@ -136,7 +136,7 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
                     $this->expires_at = null;
                 }
                 $this->save();
-                event(new RenewSubscription($this->subscriber(), $this, $periods));
+                event(new RenewSubscription($this->subscriber_type, $this, $periods));
                 return true;
             }
         }
@@ -173,7 +173,7 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
             if (($usage + $units) <= $limit) {
                 $feature->pivot->usage = $usage + $units;
                 $feature->pivot->save();
-                event(new FeatureConsumed($this, $this->subscriber(), $units));
+                event(new FeatureConsumed($this, $this->subscriber_type, $units));
                 return true;
             }
         }
@@ -187,7 +187,7 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
             if ($usage != 0 && ($usage - $units) >= 0) {
                 $feature->pivot->usage = $usage - $units;
                 $feature->pivot->save();
-                event(new FeatureUnconsumed($this, $this->subscriber(), $units));
+                event(new FeatureUnconsumed($this, $this->subscriber_type, $units));
                 return true;
             }
         }

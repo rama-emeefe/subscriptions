@@ -843,7 +843,7 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
         $plan->display_name = $this->faker->sentence(3);
         $plan->code = $code;
         $plan->description = $this->faker->text();
-        $plan->plan_type_id = $type->id;
+        $plan->type_id = $type->id;
         $plan->is_default = $isDefault;
         $plan->metadata = $metadata;
         $plan->is_visible = $isVisible;

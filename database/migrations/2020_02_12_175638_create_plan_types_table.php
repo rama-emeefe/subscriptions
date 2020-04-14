@@ -17,6 +17,7 @@ class CreatePlanTypesTable extends Migration {
 			$table->increments('id');
 			$table->string('type', 100)->unique('type_UNIQUE');
 			$table->text('description', 65535)->nullable();
+			$table->timestamps();
 		});
 	}
 

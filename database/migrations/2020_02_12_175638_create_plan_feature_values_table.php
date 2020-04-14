@@ -16,7 +16,7 @@ class CreatePlanFeatureValuesTable extends Migration {
 		{
 			$table->integer('plan_id')->unsigned();
 			$table->integer('plan_feature_id')->unsigned()->index('fk_plan_feature_plan_features_idx');
-			$table->integer('limit')->unsigned()->default(1);
+			$table->integer('limit')->unsigned()->nullable()->default(null);
 			$table->primary(['plan_id','plan_feature_id']);
 		});
 	}

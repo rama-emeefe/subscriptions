@@ -24,7 +24,7 @@ class Plan extends Model implements PlanInterface{
     }
 
     public function type(){
-        return $this->belongsTo(config('subscriptions.models.type'), 'plan_type_id');
+        return $this->belongsTo(config('subscriptions.models.type'), 'type_id');
     }
 
     public function features(){
@@ -36,7 +36,7 @@ class Plan extends Model implements PlanInterface{
     }
 
     public function scopeByType($query, string $type){
-        return $query->where('plan_type_id', $type);
+        return $query->where('type_id', $type);
     }
 
     public function scopeVisible($query){

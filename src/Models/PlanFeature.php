@@ -21,7 +21,7 @@ class PlanFeature extends Model implements PlanFeatureInterface{
     }
 
     public function types() {
-        return $this->belongsToMany(config('subscriptions.models.type'), config('subscriptions.tables.plan_type_fetaure'), 'type_id', 'feature_id');
+        return $this->belongsToMany(config('subscriptions.models.type'), config('subscriptions.tables.plan_type_feature'), 'type_id', 'feature_id');
     }
 
     public function plans() {
