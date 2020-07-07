@@ -14,7 +14,7 @@ class AddForeignKeysToPlansTable extends Migration {
 	{
 		Schema::table(config('subscriptions.tables.plans'), function(Blueprint $table)
 		{
-			$table->foreign('plan_type_id', 'fk_plans_plan_types')->references('id')->on('plan_types')->onUpdate('CASCADE')->onDelete('RESTRICT');
+			$table->foreign('type_id', 'fk_plans_plan_types')->references('id')->on('plan_types')->onUpdate('CASCADE')->onDelete('RESTRICT');
 		});
 	}
 

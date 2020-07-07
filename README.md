@@ -30,7 +30,7 @@ Un periodo de plan indica el tiempo que dura un ciclo, los usuarios o instancias
     - Puede ser no recurrente: No puede renovarse
         - Puede ser limitado: Tiene definido una unidad de tiempo como Día, Mes y Año además de la cantidad de unidades de tiempo, por ejemplo **5 días**, **6 meses**, **1 año**, pasado este periodo no se vuelve a repetir, termina la suscripción. (`limited`)
         - Puede ser ilimitado: Puede no tener definido una unidad de tiempo ni cantidad de unidades, en otras palabras, **nunca caduca**. (`unlimited`)
-- Un plan puede tener visibilidad `visible` o `hidden`
+- Un periodo de plan puede tener visibilidad `visible` o `hidden`
 - Puede tener días de tolerancia para renovación.
 - Puede haber solo un periodo default dento del mismo plan.
 
@@ -75,7 +75,7 @@ Cuando se crea una suscripción, esta se vuelve independiente del plan y del per
 La creación de un tipo de plan se realiza a través de su modelo `PlanType` de la siguiente manera:
 
 ```php
-use Emeefe\Subscriptions\PlanType;
+use Emeefe\Subscriptions\Models\PlanType;
 ...
 
 $planType = new PlanType();
@@ -88,7 +88,7 @@ $planType->save();
 Para crear features de pla se realiza a través de su modelo `PlanFeature` de la siguiente manera:
 
 ```php
-use Emeefe\Subscriptions\PlanFeature;
+use Emeefe\Subscriptions\Models\PlanFeature;
 ...
 
 $planFeature = new PlanFeature();
@@ -142,7 +142,7 @@ if($planType->hasFeature('gallery_images')){
 Una vez que tenemos el tipo de plan y sus features asociados, podemos crear un nuevo plan dentro del tipo de plan, esto se realiza usando su modelo `Plan` de la siguiente manera:
 
 ```php
-use Emeefe\Subscriptions\Plan;
+use Emeefe\Subscriptions\Models\Plan;
 ...
 
 $plan = new Plan();
@@ -154,7 +154,7 @@ $plan->is_default = true;
 $plan->metadata = [
     'order' => 1
 ];
-$plan->is_hidden = false;
+$plan->is_visible = true;
 $plan->save();
 ```
 

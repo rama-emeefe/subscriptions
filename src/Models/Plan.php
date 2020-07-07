@@ -79,16 +79,21 @@ class Plan extends Model implements PlanInterface{
 
     public function getFeatureLimitByCode($featureCode) {
         $limit = $this->features()->limitType()->where('code', $featureCode)->first();
+
+        //The limit has been defined
         if($limit) {
             $limitNumber = $limit->pivot->limit;
-            if($limitNumber) {
+            if($limitNumber !== null) {
                 return $limitNumber;
             }
-            return 0;
-        } 
-        if( $this->hasFeature($featureCode)) { 
-            return -1;
         }
+
+        //Feature exists on plan type but limit not assigned
+        if( $this->type->features()->limitType()->where('code', $featureCode)->exists() ) { 
+            return 0;
+        }
+
+        //Feature not exists on plan type or exists but is not limit type
         return -1;
     }
 

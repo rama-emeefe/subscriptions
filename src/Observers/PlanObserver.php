@@ -15,6 +15,10 @@ class PlanObserver
      */
     public function saving(Plan $plan)
     {
+        if($plan->type->plans()->where('code', $plan->code)->exists()){
+            throw new RepeatedCodeException('Ya existe el codigo '.$plan->code);
+        }
+        
         $oldDefaultPlan = $plan->type->plans()->where('is_default', 1)->first();
         if($plan->isDefault()) {
             if($oldDefaultPlan){
@@ -22,15 +26,6 @@ class PlanObserver
                     $oldDefaultPlan->update(['is_default' => false]);
                 }
             }
-        }
-        if($oldDefaultPlan) {
-            if($oldDefaultPlan->code != $plan->code) {
-                if($plan->type->plans()->where('code', $plan->code)->exists()) {
-                    throw new RepeatedCodeException('Ya existe el codigo '.$plan->code);
-                }
-            }
-        } else if($plan->type->plans()->where('code', $plan->code)->exists()){
-            throw new RepeatedCodeException('Ya existe el codigo '.$plan->code);
         }
     }
 
