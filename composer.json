@@ -23,7 +23,7 @@
     ],
     "require": {
         "php": ">=7.0.0",
-        "laravel/framework": "^5.8.*"
+        "laravel/framework": "~5.8|~6.0|~7.0"
     },
     "require-dev": {
         "orchestra/testbench": "^3.6"
