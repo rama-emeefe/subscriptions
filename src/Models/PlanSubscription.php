@@ -61,38 +61,73 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
         return $query->where('is_recurring', 1);
     }
 
+    public function isUnlimited(){
+        return !$this->expires_at;
+    }
+
+    /**
+     * Check if subscription is on trial
+     * period
+     * 
+     * @return bool
+     */
     public function isOnTrial() {
         $currentDay = Carbon::now();
-        return $currentDay >= Carbon::parse($this->trial_starts_at) && $currentDay < Carbon::parse($this->starts_at);
+        return $currentDay->greaterThanOrEqualTo($this->trial_starts_at) && $currentDay->lessThan($this->starts_at);
     }
 
+    /**
+     * Check if subscription is active
+     * 
+     * @return bool
+     */
     public function isActive() {
-        if(!$this->isCanceled()) {
-            $currentDay = Carbon::now();
-            if($currentDay >= $this->starts_at && $currentDay < $this->expires_at || $this->expires_at == null) {
-                return true;
-            }
+        $currentDay = Carbon::now();
+        if($currentDay->greaterThanOrEqualTo($this->starts_at) && $currentDay->lessThan($this->expires_at) || ($this->isUnlimited() && !$this->isCancelled())) {
+            return true;
         }
+
         return false;
     }
 
-    public function isValid() {
-        return $this->isOnTrial() || $this->isActive() || $this->isExpiredWithTolerance();
-    }
-
+    /**
+     * Check if subscription is expired but
+     * is in tolerance period
+     * 
+     * @return bool
+     */
     public function isExpiredWithTolerance() {
-        if(!$this->isCanceled()) {
+        if($this->isUnlimited()){
+            return false;
+        }
+
+        if(!$this->isCancelled()) {
             $currentDay = Carbon::now();
-            $expireDateWithTolerance = Carbon::parse($this->expires_at)->addDays($this->tolerance_days);
-            if($currentDay >= $this->expires_at && $currentDay < $expireDateWithTolerance) {
+            $expireDateWithTolerance = $this->expires_at->addDays($this->tolerance_days);
+
+            if($currentDay->greaterThanOrEqualTo($this->expires_at) && $currentDay->lessThan($expireDateWithTolerance)) {
                 return true;
             }
         }
+
         return false;
     }
 
+    /**
+     * Check if subscription is full expired
+     * 
+     * @return bool
+     */
     public function isFullExpired() {
         return ! ($this->isExpiredWithTolerance() || $this->isActive() || $this->isOnTrial());
+    }
+
+    //Suscripción no cancelada que no ha expirado y no ha pasado de sus días de tolerancia.
+    //- Suscripción cancelada que no ha expirado, en este caso se ignoran los días de tolerancia.
+    public function isValid() {
+        $nonCancelled = !$this->isCancelled() && ($this->isOnTrial() || $this->isActive() || $this->isExpiredWithTolerance());
+        $cancelled = $this->isCancelled() && !$this->isOnTrial() && !$this->isActive();
+        return $this->isOnTrial() || $this->isActive() || $this->isExpiredWithTolerance();
     }
 
     public function remainingTrialDays() {
@@ -105,7 +140,7 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
     }
 
     public function renew(int $periods = 1) {
-        if(!$this->isCanceled()) {
+        if(!$this->isCancelled()) {
             if($this->is_recurring) {
                 $dt = Carbon::parse($this->expires_at);
                 $count = $periods * $this->period_count;
@@ -154,7 +189,7 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
         return false;
     }
 
-    public function isCanceled() {
+    public function isCancelled() {
         if($this->cancelled_at != null) {
             return true;
         }

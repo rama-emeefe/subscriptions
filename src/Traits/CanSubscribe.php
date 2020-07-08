@@ -27,7 +27,7 @@ trait CanSubscribe{
      */
     public function subscribeTo(PlanPeriod $period, int $periodCount = 1){
         $currentSubscription = $this->currentSubscription($period->plan->type);
-        if($currentSubscription && !$currentSubscription->isCanceled()){
+        if($currentSubscription && !$currentSubscription->isCancelled()){
             return false;
         }
         $planSubscriptionModel = config('subscriptions.models.subscription');

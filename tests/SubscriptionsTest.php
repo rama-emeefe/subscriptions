@@ -587,7 +587,7 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
         $this->assertTrue($currentSubscription->cancel('non-payment'));
         Event::assertDispatched(CancelSubscription::class);
 
-        $this->assertTrue($currentSubscription->isCanceled());
+        $this->assertTrue($currentSubscription->isCancelled());
         $this->assertTrue($currentSubscription->isFullExpired());
 
         $this->assertFalse($currentSubscription->renew(2));

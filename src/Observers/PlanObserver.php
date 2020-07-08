@@ -23,7 +23,7 @@ class PlanObserver
         if($plan->isDefault()) {
             if($oldDefaultPlan){
                 if($oldDefaultPlan->code != $plan->code) {
-                    $oldDefaultPlan->update(['is_default' => false]);
+                    $plan->type->plans()->where('is_default', 1)->update(['is_default' => false]);
                 }
             }
         }

@@ -53,13 +53,15 @@ Cuando se crea una suscripción, esta se vuelve independiente del plan y del per
         - Puede ser limitado: Tiene definido una unidad de tiempo como Día, Mes y Año además de la cantidad de unidades de tiempo, por ejemplo **5 días**, **6 meses**, **1 año**, pasado este periodo no se vuelve a repetir, no se puede renovar y es cancelada. (`limited`)
         - Puede ser ilimitado: Puede no tener definido una unidad de tiempo ni cantidad de unidades, en otras palabras, **nunca caduca**. Si puede ser cancelada pero no renovada. (`unlimited`)
 - Una subscripción puede tener los siguientes estatus según su validez en tiempo:
-    - **Suscripción en periodo de prueba**: Suscripción que aun se encuentra en su periodo de prueba
-    - **Suscripción activa**: Suscripción que se encuentra dentro del periodo normal de la suscripción.
-    - **Suscripción expirada en rango de tolerancia**: Suscripción que ha expirado pero aún se encuentra en un rango de tolerancia.
-    - **Suscripción expirada (Full expired)**: Suscripción que ha expirado y ya han pasado los días de tolerancia. En caso de haber renovación, esta será tomada a partir de la fecha actual.
+    - **Suscripción en periodo de prueba**: Suscripción que aun se encuentra en su periodo de prueba sin importar si está cancelada o no.
+    - **Suscripción activa**: Suscripción que se encuentra si y solo si dentro del periodo normal de la suscripción, sin importar si está cancelada o no, debe tomarse en cuenta que una suscripción en días de prueba no es activa.
+    - **Suscripción expirada en rango de tolerancia**: Suscripción que no ha sido cancelada, ha expirado pero aún se encuentra en un rango de tolerancia.
+    - **Suscripción expirada (Full expired)**: Suscripción que no ha sido cancelada, ha expirado y ya han pasado los días de tolerancia. En caso de haber renovación, esta será tomada a partir de la fecha actual.
 - Adicional a los estatus anteriores exiten otras condiciones que pueden ser usadas para comparar la suscripción
     - **Suscripción cancelada**: Suscripción que ha sido cancelada, ya no puede renovarse. Se debe crear una nueva suscripción para esto.
-    - **Suscripción válida**: Suscripción que no ha expirado y no ha pasado de sus días de tolerancia, todas las suscripciones con estatus `Suscripción en periodo de prueba`,`Suscripción activa` o `Suscripción expirada en rango de tolerancia` son suscripciones válidas.
+    - **Suscripción válida**: Es el estatus con el que se debería comparar para saber si el suscriptor aún tiene acceso a la suscripción.
+        - Suscripción no cancelada que no ha expirado y no ha pasado de sus días de tolerancia.
+        - Suscripción cancelada que no ha expirado, en este caso se ignoran los días de tolerancia.
     - **Suscripción ilimitada**: Suscripción que nunca termina
     - **Suscripción limitada**: Suscripción que tiene una fecha de expiración.
 
@@ -224,7 +226,7 @@ Define como recurrente el periodo asignando una unidad y cantidad de unidades.
 - `$count`: Cantidad de unidades
 - `$unit`: Unidad de periodo, usar a través de las constantes `PlanPeriod::UNIT_DAY`, `PlanPeriod::UNIT_MONTH` y `PlanPeriod::UNIT_YEAR`
 
-Si no se llama a este método se definirá como ilimitado no recurrente.
+Si no se llama a este método o al método `setLimitedNonRecurringPeriod` se definirá como ilimitado no recurrente.
 
 #### `setLimitedNonRecurringPeriod(int $count, string $unit)`
 
@@ -233,7 +235,7 @@ Define como no recurrente el periodo y asignan la unidad y cantidad de unidades 
 - `$count`: Cantidad de unidades
 - `$unit`: Unidad de periodo, usar a través de las constantes `PlanPeriod::UNIT_DAY`, `PlanPeriod::UNIT_MONTH` y `PlanPeriod::UNIT_YEAR`
 
-Si no se llama a este método se definirá como ilimitado no recurrente.
+Si no se llama a este método o al método `setRecurringPeriod` se definirá como ilimitado no recurrente.
 
 #### `setHidden()`
 
@@ -358,12 +360,6 @@ if($subscription->cancel()){
 }else{
     echo "La suscripción ya ha sido cancelada";
 }
-```
-
-### Verificar features de suscripción
-Una vez que existe una suscripción a un periodo se puede verificar la existencia de features así como la cantidad de restantes.
-
-```php
 ```
 
 # Modelos
@@ -651,6 +647,15 @@ Devuelve:
 - `true`: En caso de estar expirada
 - `false`: En caso de no estar expirada
 
+#### `isCancelled()`
+
+Checa si la sucripción está cancelada
+
+Devuelve:
+
+- `true`: En caso de estar cancelada
+- `false`: En caso de no estar cancelada
+
 #### `remainingTrialDays()`
 
 Devuelve la cantidad de días de prueba restantes
@@ -672,7 +677,7 @@ Devuelve:
 
 #### `cancel(string $reason = null)`
 
-Cancela la suscripción solo si esta no ya está cancelada. Si se cancela una suscripción **ilimitada** entonces define su fecha de expiración a la fecha en que se cancela
+Cancela la suscripción solo si no está cancelada. Si se cancela una suscripción **ilimitada** entonces define su fecha de expiración a la fecha en que se cancela.
 
 - `$reason`: Razón por la cuál se cancela la suscripción.
 
