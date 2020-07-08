@@ -1,17 +1,30 @@
 {
     "name": "emeefe/subscriptions",
     "description": "A laravel package for manage subscriptions",
+    "keywords": [
+        "laravel",
+        "plans",
+        "subscriptions",
+        "periods",
+        "subscription",
+        "plan",
+        "emeefe"
+    ],
+    "license": "MIT",
     "authors": [
         {
             "name": "Abraham Flores Cosme",
-            "email": "abr.flores24@gmail.com"
+            "email": "abraham@emeefe.mx"
         },
         {
             "name": "José Ricardo Pajarito Chapuli",
             "email": "jose.pajarito@emeefe.mx"
         }
     ],
-    "require": {},
+    "require": {
+        "php": ">=7.0.0",
+        "laravel/framework": "^5.8.*"
+    },
     "require-dev": {
         "orchestra/testbench": "^3.6"
     },
