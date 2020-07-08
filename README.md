@@ -54,15 +54,19 @@ Cuando se crea una suscripción, esta se vuelve independiente del plan y del per
         - Puede ser ilimitado: Puede no tener definido una unidad de tiempo ni cantidad de unidades, en otras palabras, **nunca caduca**. Si puede ser cancelada pero no renovada. (`unlimited`)
 - Una subscripción puede tener los siguientes estatus según su validez en tiempo:
     - **Suscripción en periodo de prueba**: Suscripción que aun se encuentra en su periodo de prueba sin importar si está cancelada o no.
-    - **Suscripción activa**: Suscripción que se encuentra si y solo si dentro del periodo normal de la suscripción, sin importar si está cancelada o no, debe tomarse en cuenta que una suscripción en días de prueba no es activa.
-    - **Suscripción expirada en rango de tolerancia**: Suscripción que no ha sido cancelada, ha expirado pero aún se encuentra en un rango de tolerancia.
-    - **Suscripción expirada (Full expired)**: Suscripción que no ha sido cancelada, ha expirado y ya han pasado los días de tolerancia. En caso de haber renovación, esta será tomada a partir de la fecha actual.
-- Adicional a los estatus anteriores exiten otras condiciones que pueden ser usadas para comparar la suscripción
+    - **Suscripción activa**: 
+        - Suscripción limitada que se encuentra si y solo si dentro del periodo normal de la suscripción, sin importar si está cancelada o no, debe tomarse en cuenta que una suscripción en días de prueba no es activa.
+        - Suscripción ilimitada no cancelada
+    - **Suscripción expirada en rango de tolerancia**: Suscripción que no ha sido cancelada, ha expirado pero aún se encuentra en un rango de tolerancia, una suscripción ilimitada nunca presentará este estatus.
+    - **Suscripción expirada (Full expired)**: 
+        - Suscripción que no ha sido cancelada, ha expirado y ya han pasado los días de tolerancia. En caso de haber renovación, esta será tomada a partir de la fecha actual.
+        - Suscripción ilimitada que ha sido cancelada
+- Adicional a los estatus anteriores exiten otras condiciones que pueden ser usadas para comparar la suscripción.
     - **Suscripción cancelada**: Suscripción que ha sido cancelada, ya no puede renovarse. Se debe crear una nueva suscripción para esto.
     - **Suscripción válida**: Es el estatus con el que se debería comparar para saber si el suscriptor aún tiene acceso a la suscripción.
         - Suscripción no cancelada que no ha expirado y no ha pasado de sus días de tolerancia.
         - Suscripción cancelada que no ha expirado, en este caso se ignoran los días de tolerancia.
-    - **Suscripción ilimitada**: Suscripción que nunca termina
+    - **Suscripción ilimitada**: Suscripción que nunca termina.
     - **Suscripción limitada**: Suscripción que tiene una fecha de expiración.
 
 ![Status](docs/images/SubscriptionsStatus.png)
@@ -604,7 +608,7 @@ Filtra periodos ocultos
 
 #### `isOnTrial()`
 
-Checa si la suscripción se encuentra en periodo de prueba, esto es verificar si la fecha actual está entre las fechas `trial_starts_at` y `starts_at` en un rango exclusivo(no se contemplan los límites).
+Checa si la suscripción se encuentra en periodo de prueba.
 
 Devuelve:
 
@@ -613,7 +617,7 @@ Devuelve:
 
 #### `isActive()`
 
-Checa si la suscripción se encuentra en periodo normal, verifica si la fecha actual está entre las fechas `starts_at` y `expires_at`. Para el caso de una suscripción que tenga la fecha `expires_at` como `null` se tomará como Activa, esto debido a que la suscripción es ilimitada.
+Checa si la suscripción se encuentra en periodo normal.
 
 Devuelve:
 
@@ -622,7 +626,7 @@ Devuelve:
 
 #### `isValid()`
 
-Checa si la suscripción es válida según la definición de "Suscripción válida" anteriormente mencionada.
+Checa si la suscripción es válida.
 
 Devuelve:
 
@@ -631,7 +635,7 @@ Devuelve:
 
 #### `isExpiredWithTolerance()`
 
-Checa si la suscripción ha llegado a su fecha de expiración pero se encuentra en el periodo de tolerancia. Verifica si la fecha actual está entre las fechas `expires_at` y `expires_at + dias_tolerancia`. Usado comúnmente para manejo de pagos.
+Checa si la suscripción ha llegado a su fecha de expiración pero se encuentra en el periodo de tolerancia, muy útil para verificar pagos.
 
 Devuelve:
 
@@ -640,7 +644,7 @@ Devuelve:
 
 #### `isFullExpired()`
 
-Checa si la suscripción ha expirado y no se encuentra dentro de un periodo de tolerancia, usado comúnmente para manejo de pagos.
+Checa si la suscripción ha expirado y no se encuentra dentro de un periodo de tolerancia, muy útil para verificar pagos.
 
 Devuelve:
 
