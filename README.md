@@ -330,7 +330,7 @@ if($user->hasSubscription('user_membership')){
 ```
 
 ### Obtener suscripción
-Para obtener la suscripción actual se usa el método `currentSubscription(PlanType $planType)`, la suscripción actual es la última suscripción creada sobre el modelo que se suscribe, aunque la suscripción esté cancelada será devuelta por este método.
+Para obtener la suscripción actual se usa el método `currentSubscription($planTypeOrType)`, la suscripción actual es la última suscripción creada sobre el modelo que se suscribe, aunque la suscripción esté cancelada será devuelta por este método.
 
 ```php
 if($user->currentSubscription($planType)){
@@ -363,6 +363,21 @@ if($subscription->cancel()){
     echo "La suscripción ha sido cancelada";
 }else{
     echo "La suscripción ya ha sido cancelada";
+}
+```
+
+### Actualizar suscripción
+Actualiza de una suscripción válida a una nueva cambiando de periodo ya sea del mismo plan o de otro plan por medio del método `updateSubscriptionTo` del trait `CanSubscribe`.
+
+Una actualización de suscripción no es más que una cancelación de la suscripción válida actual y una asignación a una nueva, cuando la actualización se ejecuta de la manera aquí explicada no se lanza el evento `CancelSubscription` sino el evento `UpdatedSubscription`.
+
+```php
+...
+
+if($user->updateSubscriptionTo($newPeriod)){
+    echo "La suscripción ha sido actualizada";
+}else{
+    echo "La actualización de suscripción no se pudo realizar";
 }
 ```
 
@@ -660,6 +675,24 @@ Devuelve:
 - `true`: En caso de estar cancelada
 - `false`: En caso de no estar cancelada
 
+#### `isUnlimited()`
+
+Checa si la sucripción es ilimitada
+
+Devuelve:
+
+- `true`: En caso de ser ilimitadaa
+- `false`: En caso de no ser ilimitada
+
+#### `isLimited()`
+
+Checa si la sucripción es limitada
+
+Devuelve:
+
+- `true`: En caso de ser limitada
+- `false`: En caso de no ser limitada
+
 #### `remainingTrialDays()`
 
 Devuelve la cantidad de días de prueba restantes
@@ -697,7 +730,7 @@ Devuelve `bool`
 
 #### `consumeFeature(string $featureCode, int $units = 1)`
 
-Consume una unidad de las unidades disponibles en la suscripción de un feature.
+Consume una unidad de las unidades disponibles en la suscripción de un feature siempre y cuando la suscripción no esté cancelada.
 
 - `$featureCode`: Código del feature
 - `$units`: Unidades a consumir, por default `1`
@@ -709,7 +742,7 @@ Devuelve `bool`
 
 #### `unconsumeFeature(string $featureCode, int $units = 1)`
 
-Desconsume una unidad de las unidades consumidas en la suscripción de un feature.
+Desconsume una unidad de las unidades consumidas en la suscripción de un feature siempre y cuando la suscripción no esté cancelada.
 
 - `$featureCode`: Código del feature
 - `$units`: Unidades a desconsumir, por default `1`
@@ -777,7 +810,7 @@ Filtra suscripciones recurrentes
 
 # Eventos
 
-Este paquete ofrece muchas posibilidades que pueden manejarse de una mejor manera por medio de la escucha de eventos.
+Este paquete ofrece eventos que son lanzados en las diversas circunstancias más importantes o que nos permiten adaptar las suscripciones a la mayoria de casos posibles.
 
 `Emeefe\Subscriptions\Events\FeatureLimitChangeOnPlan`
 Se lanza cuando se actualiza el límite de un feature en un plan, tanto para la primera vez que se asigna límite como también cuando se actualiza.
@@ -813,21 +846,34 @@ Se lanza cuando una suscripción es renovada/extendida
 - `$event->cycles`: Cantidad de ciclos a renovar
 
 `Emeefe\Subscriptions\Events\CancelSubscription`
-Se lanza cuando una subscripción es cancelada, usando el método `cancel`
+Se lanza cuando una subscripción es cancelada, usando el método `cancel`. Cuando es una cancelación por actualización de plan usando el método `updateSubscriptionTo` del trait `CanSubscribe` no se hace la llamada a este evento y se define su motivo de cancelación a `PlanSubscription::CANCEL_REASON_UPDATE_SUBSCRIPTION`
 
-- `$subscription`: La suscripción cancelada
-- `$reason`: El motivo de la cancelación proporcionado en `cancel($reason)`
+- `$event->subscription`: La suscripción cancelada
+- `$event->reason`: El motivo de la cancelación proporcionado en `cancel($reason)`
 
 `Emeefe\Subscriptions\Events\FeatureConsumed`
 Se lanza cuando un feature de la suscripción es consumido
 
-- `$subscription`: Suscripción de la cuál se consume
-- `$model`: Modelo suscrito
-- `$units`: Unidades consumidas
+- `$event->subscription`: Suscripción de la cuál se consume
+- `$event->model`: Modelo suscrito
+- `$event->units`: Unidades consumidas
 
 `Emeefe\Subscriptions\Events\FeatureUnconsumed`
 Se lanza cuando un feature de la suscripción es "desconsumido"
 
-- `$subscription`: Suscripción de la cuál se consume
-- `$model`: Modelo suscrito
-- `$units`: Unidades "desconsumidas"
+- `$event->subscription`: Suscripción de la cuál se consume
+- `$event->model`: Modelo suscrito
+- `$event->units`: Unidades "desconsumidas"
+
+`Emeefe\Subscriptions\Events\FeatureRemovedFromPlan`
+Se lanza cuando un feature es eliminado del plan
+
+- `$event->plan`: Plan del que se eliminó el feature
+- `$event->feature`: Feature eliminado del plan
+
+`Emeefe\Subscriptions\Events\UpdatedSubscription`
+Se lanza cuando se actualiza suscripción usando el método `updateSubscriptionTo` del trait `CanSubscribe`
+
+- `$event->model`: Modelo suscrito
+- `$event->oldSubscription`: Suscripción anterior
+- `$event->subscription`: Nueva suscripción

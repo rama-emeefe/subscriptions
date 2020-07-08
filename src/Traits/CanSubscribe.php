@@ -7,7 +7,8 @@ use Emeefe\Subscriptions\Models\PlanPeriod;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Emeefe\Subscriptions\Events\NewSubscription;
-
+use Emeefe\Subscriptions\Events\UpdatedSubscription;
+use Emeefe\Subscriptions\Models\PlanType;
 
 trait CanSubscribe{
 
@@ -30,6 +31,7 @@ trait CanSubscribe{
         if($currentSubscription && !$currentSubscription->isCancelled()){
             return false;
         }
+
         $planSubscriptionModel = config('subscriptions.models.subscription');
         $subscription = new $planSubscriptionModel();
         $subscription->period_id = $period->id;
@@ -69,8 +71,6 @@ trait CanSubscribe{
         $subscription->is_recurring = $period->is_recurring;
         $subscription->save();
 
-        event(new NewSubscription($this, $subscription));
-
         $featuresPlan = $period->plan->features()->get();            
         foreach($featuresPlan as $featurePlan){
             if($featurePlan->type == 'limit') {
@@ -80,6 +80,78 @@ trait CanSubscribe{
             }
         }
 
+        event(new NewSubscription($this, $subscription));
+        return true;
+    }
+
+    /**
+     * Subscribe to period
+     * 
+     * @param PlanPeriod $period        The period instance
+     * @param int        $periodCount   The number of periods
+     * @return boolean 
+     */
+    public function updateSubscriptionTo(PlanPeriod $newPeriod, int $periodCount = 1){
+        $currentSubscription = $this->currentSubscription($newPeriod->plan->type);
+        if(!$currentSubscription){
+            return false;
+        }
+
+        if($currentSubscription && $currentSubscription->isCancelled() && $currentSubscription->isValid()){
+            return false;
+        }
+
+        $currentSubscription->cancel(PlanSubscription::CANCEL_REASON_UPDATE_SUBSCRIPTION);
+
+        $planSubscriptionModel = config('subscriptions.models.subscription');
+        $subscription = new $planSubscriptionModel();
+        $subscription->period_id = $newPeriod->id;
+        $subscription->subscriber_id = $this->id;
+        $subscription->subscriber_type = get_class($this);
+        $subscription->trial_starts_at = Carbon::now();
+        $subscription->starts_at = Carbon::now()->addDays($newPeriod->trial_days);
+        if($newPeriod->is_recurring || $newPeriod->isLimitedNonRecurring()) {
+            $dt = Carbon::parse($subscription->starts_at);
+            $dt->settings([
+                'monthOverflow' => false,
+            ]);
+            $count = $periodCount * $newPeriod->period_count;
+            if($newPeriod->period_unit == 'day') {
+                $subscription->expires_at = $dt->addDays($count);
+            }
+            if($newPeriod->period_unit == 'month') {
+                $subscription->expires_at = $dt->addMonths($count);
+            }
+            if($newPeriod->period_unit == 'year') {
+                $subscription->expires_at = $dt->addYears($count);
+            }
+            if($newPeriod->period_unit == null) {
+                $subscription->expires_at = null;
+            }
+        } else {
+            $subscription->expires_at = null;
+        }
+        $subscription->cancelled_at = null;
+        $subscription->cancellation_reason = null;
+        $subscription->plan_type_id = $newPeriod->plan->type->id;
+        $subscription->price = $newPeriod->price;
+        $subscription->tolerance_days = $newPeriod->tolerance_days;
+        $subscription->currency = $newPeriod->currency;
+        $subscription->period_unit = $newPeriod->period_unit;
+        $subscription->period_count = $newPeriod->period_count;
+        $subscription->is_recurring = $newPeriod->is_recurring;
+        $subscription->save();
+
+        $featuresPlan = $newPeriod->plan->features()->get();            
+        foreach($featuresPlan as $featurePlan){
+            if($featurePlan->type == 'limit') {
+                $subscription->features()->attach($featurePlan->id, ['limit' => $featurePlan->pivot->limit, 'usage' => 0]);
+            } else {
+                $subscription->features()->attach($featurePlan->id);
+            }
+        }
+
+        event(new UpdatedSubscription($this, $currentSubscription, $subscription));
         return true;
     }
 
@@ -104,19 +176,26 @@ trait CanSubscribe{
     /**
      * Get the last subscription created on the model
      * 
-     * @param string|PlanType $planTypeOrType
+     * @param string|PlanType|int $planTypeOrType
      * @return PlanSubscription
      */
     public function currentSubscription($planTypeOrType){
         if(is_int($planTypeOrType)) {
-            return $this->subscriptions()->where([
-                ['starts_at', '<>', null],
-                ['plan_type_id', $planTypeOrType],       
-            ])->first();
+            $id = $planTypeOrType;
+        }elseif(is_string($planTypeOrType)){
+            $planType = PlanType::where('type', $planTypeOrType)->first();
+            if($planType){
+                $id = $planType->id;
+            }else{
+                return null;
+            }
+        }else{
+            $id = $planTypeOrType->id;
         }
+
         return $this->subscriptions()->where([
             ['starts_at', '<>', null],
-            ['plan_type_id', $planTypeOrType->id],       
-        ])->first();
+            ['plan_type_id', $id],       
+        ])->orderBy('created_at', 'desc')->first();
     }
 }    

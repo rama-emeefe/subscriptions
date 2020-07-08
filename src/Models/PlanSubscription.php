@@ -19,6 +19,8 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
         'expires_at' => 'datetime'
     ];
 
+    public const CANCEL_REASON_UPDATE_SUBSCRIPTION = 'update_subscription';
+
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
@@ -38,7 +40,7 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
     }
 
     public function features() {
-        return $this->belongsToMany(config('subscriptions.models.feature'), config('subscriptions.tables.plan_subscription_usage'), 'feature_id', 'subscription_id')->withPivot(['limit', 'usage']);
+        return $this->belongsToMany(config('subscriptions.models.feature'), config('subscriptions.tables.plan_subscription_usage'), 'subscription_id', 'feature_id')->withPivot(['limit', 'usage']);
     }
 
     public function hasType(string $type) {
@@ -63,6 +65,10 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
 
     public function isUnlimited(){
         return !$this->expires_at;
+    }
+
+    public function isLimited(){
+        return !$this->isUnlimited();
     }
 
     /**
@@ -122,12 +128,15 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
         return ! ($this->isExpiredWithTolerance() || $this->isActive() || $this->isOnTrial());
     }
 
-    //Suscripción no cancelada que no ha expirado y no ha pasado de sus días de tolerancia.
-    //- Suscripción cancelada que no ha expirado, en este caso se ignoran los días de tolerancia.
+    /**
+     * Check if subscription is valid
+     * 
+     * @return bool
+     */
     public function isValid() {
         $nonCancelled = !$this->isCancelled() && ($this->isOnTrial() || $this->isActive() || $this->isExpiredWithTolerance());
-        $cancelled = $this->isCancelled() && !$this->isOnTrial() && !$this->isActive();
-        return $this->isOnTrial() || $this->isActive() || $this->isExpiredWithTolerance();
+        $cancelled = $this->isCancelled() && ($this->isOnTrial() || $this->isActive());
+        return $nonCancelled || $cancelled;
     }
 
     public function remainingTrialDays() {
@@ -179,12 +188,17 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
     }
 
     public function cancel(string $reason = null) {
-        if($this->period_count == null || $this->cancelled_at == null) {
-            $this->cancelled_at = Carbon::now()->toDateTimeString();
-            $this->cancellation_reason = $reason;
-            $this->save();
-            event(new CancelSubscription($this, $reason));
-            return true;
+        if(!$this->isCancelled()){
+            if($this->period_count == null || $this->cancelled_at == null) {
+                $this->cancelled_at = Carbon::now()->toDateTimeString();
+                $this->cancellation_reason = $reason;
+                $this->save();
+
+                if($reason != self::CANCEL_REASON_UPDATE_SUBSCRIPTION){
+                    event(new CancelSubscription($this, $reason));
+                }
+                return true;
+            }
         }
         return false;
     }
@@ -201,6 +215,9 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
     }
 
     public function consumeFeature(string $featureCode, int $units = 1) {
+        if($this->isCancelled())
+            return false;
+
         $feature = $this->features()->limitType()->where('code', $featureCode)->first();
         if($feature) {
             $usage = $feature->pivot->usage;
@@ -216,6 +233,9 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
     }
 
     public function unconsumeFeature(string $featureCode, int $units = 1) {
+        if($this->isCancelled())
+            return false;
+
         $feature = $this->features()->limitType()->where('code', $featureCode)->first();
         if($feature) {
             $usage = $feature->pivot->usage;

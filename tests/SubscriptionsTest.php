@@ -20,6 +20,7 @@ use Emeefe\Subscriptions\Events\NewFeatureOnPlan;
 use Emeefe\Subscriptions\Events\NewSubscription;
 use Emeefe\Subscriptions\Events\PlanPeriodChange;
 use Emeefe\Subscriptions\Events\RenewSubscription;
+use Emeefe\Subscriptions\Events\UpdatedSubscription;
 
 
 class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
@@ -762,6 +763,34 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
         $currentSubscription->renew(1);
 
         $this->assertSame($currentSubscription->expires_at->format('Y-m-d H:i'), '2020-05-31 12:00');
+    }
+
+    /**
+     * Test update subscription
+     */
+    public function test_update_subscription(){
+        Event::fake();
+        Carbon::setTestNow(Carbon::create(2020, 1, 28, 12, 0, 0)); //28 Jan 2020 12:00:00
+
+        $planType = $this->createPlanType('user_membership');
+        $plan = $this->createPlan('plan', $planType);
+        $periodOne = Subscriptions::period($this->faker->sentence(3), 'period_one', $plan)
+            ->create();
+        $periodTwo = Subscriptions::period($this->faker->sentence(3), 'period_two', $plan)
+            ->create();
+
+        $user = $this->createUser();
+        $user->subscribeTo($periodOne);
+        $currentSubscription = $user->currentSubscription($planType);
+
+        $this->assertEquals($currentSubscription->period->id, $periodOne->id);
+
+        Carbon::setTestNow(Carbon::create(2020, 2, 15, 12, 0, 0)); //15 Feb 2020 12:00:00
+        $this->assertTrue($user->updateSubscriptionTo($periodTwo));
+        Event::assertDispatched(UpdatedSubscription::class);
+
+        $currentSubscription = $user->currentSubscription($planType);
+        $this->assertEquals($currentSubscription->period->id, $periodTwo->id);
     }
 
     /**

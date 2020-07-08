@@ -5,6 +5,7 @@ namespace Emeefe\Subscriptions\Models;
 use Illuminate\Database\Eloquent\Model;
 use Emeefe\Subscriptions\Contracts\PlanInterface;
 use Emeefe\Subscriptions\Events\FeatureLimitChangeOnPlan;
+use Emeefe\Subscriptions\Events\FeatureRemovedFromPlan;
 use Emeefe\Subscriptions\Events\NewFeatureOnPlan;
 
 
@@ -64,6 +65,18 @@ class Plan extends Model implements PlanInterface{
                 }
             }
         }
+        return false;
+    }
+
+    public function removeFeature(string $featureCode){
+        $feature = $this->type->features()->where('code', $featureCode)->first();
+
+        if($feature){
+            $this->features()->detach($feature->id);
+            event(new FeatureRemovedFromPlan($this, $feature));
+            return true;
+        }
+
         return false;
     }
 

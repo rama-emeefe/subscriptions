@@ -31,7 +31,6 @@ class CreatePlanSubscriptionsTable extends Migration {
 			$table->integer('period_count')->nullable()->comment('Si es null no es recurrente');
 			$table->boolean('is_recurring')->default(0);
 			$table->timestamps();
-			$table->unique(['subscriber_id','subscriber_type','plan_type_id'], 'fk_unique_type_suscriber');
 		});
 	}
 
