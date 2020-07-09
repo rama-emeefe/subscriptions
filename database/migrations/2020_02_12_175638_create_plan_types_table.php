@@ -12,7 +12,7 @@ class CreatePlanTypesTable extends Migration {
 	 */
 	public function up()
 	{
-		Schema::create(config('subscriptions.tables.plan_types'), function(Blueprint $table)
+		Schema::create(config('emeefe.subscriptions.tables.plan_types'), function(Blueprint $table)
 		{
 			$table->increments('id');
 			$table->string('type', 100)->unique('type_UNIQUE');
@@ -29,7 +29,7 @@ class CreatePlanTypesTable extends Migration {
 	 */
 	public function down()
 	{
-		Schema::drop(config('subscriptions.tables.plan_types'));
+		Schema::drop(config('emeefe.subscriptions.tables.plan_types'));
 	}
 
 }

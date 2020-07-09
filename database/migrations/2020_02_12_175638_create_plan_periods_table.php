@@ -12,7 +12,7 @@ class CreatePlanPeriodsTable extends Migration {
 	 */
 	public function up()
 	{
-		Schema::create(config('subscriptions.tables.plan_periods'), function(Blueprint $table)
+		Schema::create(config('emeefe.subscriptions.tables.plan_periods'), function(Blueprint $table)
 		{
 			$table->increments('id');
 			$table->string('display_name', 100);
@@ -40,7 +40,7 @@ class CreatePlanPeriodsTable extends Migration {
 	 */
 	public function down()
 	{
-		Schema::drop(config('subscriptions.tables.plan_periods'));
+		Schema::drop(config('emeefe.subscriptions.tables.plan_periods'));
 	}
 
 }

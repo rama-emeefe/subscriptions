@@ -12,7 +12,7 @@ class AddForeignKeysToPlanFeatureValuesTable extends Migration {
 	 */
 	public function up()
 	{
-		Schema::table(config('subscriptions.tables.plan_feature_values'), function(Blueprint $table)
+		Schema::table(config('emeefe.subscriptions.tables.plan_feature_values'), function(Blueprint $table)
 		{
 			$table->foreign('plan_feature_id', 'fk_plan_feature_plan_features')->references('id')->on('plan_features')->onUpdate('CASCADE')->onDelete('CASCADE');
 			$table->foreign('plan_id', 'fk_plan_feature_plans')->references('id')->on('plans')->onUpdate('CASCADE')->onDelete('CASCADE');
@@ -27,7 +27,7 @@ class AddForeignKeysToPlanFeatureValuesTable extends Migration {
 	 */
 	public function down()
 	{
-		Schema::table(config('subscriptions.tables.plan_feature_values'), function(Blueprint $table)
+		Schema::table(config('emeefe.subscriptions.tables.plan_feature_values'), function(Blueprint $table)
 		{
 			$table->dropForeign('fk_plan_feature_plan_features');
 			$table->dropForeign('fk_plan_feature_plans');

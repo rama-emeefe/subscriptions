@@ -12,7 +12,7 @@ class CreatePlanFeaturesTable extends Migration {
 	 */
 	public function up()
 	{
-		Schema::create(config('subscriptions.tables.plan_features'), function(Blueprint $table)
+		Schema::create(config('emeefe.subscriptions.tables.plan_features'), function(Blueprint $table)
 		{
 			$table->increments('id');
 			$table->string('display_name', 100);
@@ -32,7 +32,7 @@ class CreatePlanFeaturesTable extends Migration {
 	 */
 	public function down()
 	{
-		Schema::drop(config('subscriptions.tables.plan_features'));
+		Schema::drop(config('emeefe.subscriptions.tables.plan_features'));
 	}
 
 }

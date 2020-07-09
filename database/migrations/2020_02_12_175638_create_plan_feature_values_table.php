@@ -12,7 +12,7 @@ class CreatePlanFeatureValuesTable extends Migration {
 	 */
 	public function up()
 	{
-		Schema::create(config('subscriptions.tables.plan_feature_values'), function(Blueprint $table)
+		Schema::create(config('emeefe.subscriptions.tables.plan_feature_values'), function(Blueprint $table)
 		{
 			$table->integer('plan_id')->unsigned();
 			$table->integer('plan_feature_id')->unsigned()->index('fk_plan_feature_plan_features_idx');
@@ -29,7 +29,7 @@ class CreatePlanFeatureValuesTable extends Migration {
 	 */
 	public function down()
 	{
-		Schema::drop(config('subscriptions.tables.plan_feature_values'));
+		Schema::drop(config('emeefe.subscriptions.tables.plan_feature_values'));
 	}
 
 }
