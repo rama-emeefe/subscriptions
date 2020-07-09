@@ -9,17 +9,17 @@ class PlanType extends Model implements PlanTypeInterface{
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
-        $this->setTable(config('subscriptions.tables.plan_types'));
+        $this->setTable(config('emeefe.subscriptions.tables.plan_types'));
     }
 
     public function features(){
-        return $this->belongsToMany(config('subscriptions.models.feature'), config('subscriptions.tables.plan_type_feature'), 'type_id', 'feature_id');
+        return $this->belongsToMany(config('emeefe.subscriptions.models.feature'), config('emeefe.subscriptions.tables.plan_type_feature'), 'type_id', 'feature_id');
     }
     public function plans(){
-        return $this->hasMany(config('subscriptions.models.plan'), 'type_id');
+        return $this->hasMany(config('emeefe.subscriptions.models.plan'), 'type_id');
     }
     public function subscriptions(){
-        return $this->hasMany(config('subscriptions.models.subscription'), 'plan_type_id');
+        return $this->hasMany(config('emeefe.subscriptions.models.subscription'), 'plan_type_id');
     }
 
     public function attachFeature(PlanFeature $planFeature){
@@ -38,7 +38,7 @@ class PlanType extends Model implements PlanTypeInterface{
     }
 
     public function getFeatureByCode(string $featureCode){
-        $planFeatureModel = config('subscriptions.models.feature');
+        $planFeatureModel = config('emeefe.subscriptions.models.feature');
         return $planFeatureModel::where('code', $featureCode)->get()->first();
     }
 

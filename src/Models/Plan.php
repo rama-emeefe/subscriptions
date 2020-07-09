@@ -21,19 +21,19 @@ class Plan extends Model implements PlanInterface{
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
-        $this->setTable(config('subscriptions.tables.plans'));
+        $this->setTable(config('emeefe.subscriptions.tables.plans'));
     }
 
     public function type(){
-        return $this->belongsTo(config('subscriptions.models.type'), 'type_id');
+        return $this->belongsTo(config('emeefe.subscriptions.models.type'), 'type_id');
     }
 
     public function features(){
-        return $this->belongsToMany(config('subscriptions.models.feature'), config('subscriptions.tables.plan_feature_values'), 'plan_id', 'plan_feature_id')->withPivot('limit');
+        return $this->belongsToMany(config('emeefe.subscriptions.models.feature'), config('emeefe.subscriptions.tables.plan_feature_values'), 'plan_id', 'plan_feature_id')->withPivot('limit');
     }
 
     public function periods() {
-        return $this->hasMany(config('subscriptions.models.period'), 'plan_id');
+        return $this->hasMany(config('emeefe.subscriptions.models.period'), 'plan_id');
     }
 
     public function scopeByType($query, string $type){

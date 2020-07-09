@@ -24,11 +24,11 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
-        $this->setTable(config('subscriptions.tables.plan_subscriptions'));
+        $this->setTable(config('emeefe.subscriptions.tables.plan_subscriptions'));
     }
 
     public function period(){
-        return $this->belongsTo(config('subscriptions.models.period'), 'period_id');
+        return $this->belongsTo(config('emeefe.subscriptions.models.period'), 'period_id');
     }
 
     public function subscriber() {
@@ -36,11 +36,11 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
     }
 
     public function plan_type() {
-        return $this->belongsTo(config('subscriptions.models.type'), 'plan_type_id');
+        return $this->belongsTo(config('emeefe.subscriptions.models.type'), 'plan_type_id');
     }
 
     public function features() {
-        return $this->belongsToMany(config('subscriptions.models.feature'), config('subscriptions.tables.plan_subscription_usage'), 'subscription_id', 'feature_id')->withPivot(['limit', 'usage']);
+        return $this->belongsToMany(config('emeefe.subscriptions.models.feature'), config('emeefe.subscriptions.tables.plan_subscription_usage'), 'subscription_id', 'feature_id')->withPivot(['limit', 'usage']);
     }
 
     public function hasType(string $type) {

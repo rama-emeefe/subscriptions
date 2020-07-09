@@ -52,7 +52,7 @@ class SubscriptionsServiceProvider extends ServiceProvider
 
     private function publishConfig(){
         $this->publishes([
-            __DIR__.'/../config/subscriptions.php' => config_path('subscriptions.php'),
+            __DIR__.'/../config/emeefe.subscriptions.php' => config_path('emeefe.subscriptions.php'),
         ]);
     }
 }

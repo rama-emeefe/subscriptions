@@ -13,15 +13,15 @@ class PlanPeriod extends Model implements PlanPeriodInterface{
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
-        $this->setTable(config('subscriptions.tables.plan_periods'));
+        $this->setTable(config('emeefe.subscriptions.tables.plan_periods'));
     }
 
     public function plan() {
-        return $this->belongsTo(config('subscriptions.models.plan'), 'plan_id');
+        return $this->belongsTo(config('emeefe.subscriptions.models.plan'), 'plan_id');
     }
 
     public function subscriptions() {
-        return $this->hasMany(config('subscriptions.models.subscription'), 'period_id');
+        return $this->hasMany(config('emeefe.subscriptions.models.subscription'), 'period_id');
     }
 
     public function scopeVisible($query) {

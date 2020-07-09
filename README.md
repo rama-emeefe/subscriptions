@@ -1,5 +1,25 @@
-# Subscriptions
+# Emeefe Subscriptions
 
+## Instalación
+
+1. Instalar el paquete vía composer:
+    ```shell
+    composer require emeefe/subscriptions
+    ```
+
+2. Publicar recursos (migraciones y archivo de configuración):
+    ```shell
+    php artisan rinvex:publish:subscriptions
+    ```
+
+3. Execute migrations via the following command:
+    ```shell
+    php artisan rinvex:migrate:subscriptions
+    ```
+
+4. Done!
+
+# Subscriptions
 ### Tipos de plan (PlanType)
 Un tipo de plan engloba un conjunto de caracteristicas permitidas, puede usarse para separar multiples tipos de planes como planes para Empresa, para Usuarios, de almacenamiento, etc.
 

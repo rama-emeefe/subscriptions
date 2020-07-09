@@ -16,7 +16,7 @@ trait CanSubscribe{
      * The subscriptions relationship
      */
     public function subscriptions(){
-        return $this->morphMany(config('subscriptions.models.subscription'), 'subscriber');
+        return $this->morphMany(config('emeefe.subscriptions.models.subscription'), 'subscriber');
     }
 
     /**
@@ -32,7 +32,7 @@ trait CanSubscribe{
             return false;
         }
 
-        $planSubscriptionModel = config('subscriptions.models.subscription');
+        $planSubscriptionModel = config('emeefe.subscriptions.models.subscription');
         $subscription = new $planSubscriptionModel();
         $subscription->period_id = $period->id;
         $subscription->subscriber_id = $this->id;
@@ -103,7 +103,7 @@ trait CanSubscribe{
 
         $currentSubscription->cancel(PlanSubscription::CANCEL_REASON_UPDATE_SUBSCRIPTION);
 
-        $planSubscriptionModel = config('subscriptions.models.subscription');
+        $planSubscriptionModel = config('emeefe.subscriptions.models.subscription');
         $subscription = new $planSubscriptionModel();
         $subscription->period_id = $newPeriod->id;
         $subscription->subscriber_id = $this->id;
