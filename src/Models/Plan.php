@@ -37,7 +37,12 @@ class Plan extends Model implements PlanInterface{
     }
 
     public function scopeByType($query, string $type){
-        return $query->where('type_id', $type);
+        $planType = PlanType::where('type', $type)->first();
+        if(!$planType){
+            return $query;
+        }
+
+        return $query->where('type_id', $planType->id);
     }
 
     public function scopeVisible($query){
@@ -46,6 +51,10 @@ class Plan extends Model implements PlanInterface{
 
     public function scopeHidden($query){
         return $query->where('is_visible',0);
+    }
+
+    public function scopeDefault($query){
+        return $query->where('is_default',1);
     }
 
     public function assignFeatureLimitByCode(string $featureCode, int $limit = 0){

@@ -151,30 +151,30 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
     public function renew(int $periods = 1) {
         if(!$this->isCancelled()) {
             if($this->is_recurring) {
-                $dt = Carbon::parse($this->expires_at);
+                $dt =$this->expires_at;
                 $count = $periods * $this->period_count;
                 $dt->settings([
                     'monthOverflow' => false,
                 ]);
+
                 if($this->period_unit == 'day') {
-                    $this->expires_at = $dt->addDays($count)->toDateTimeString();
+                    $this->expires_at = $dt->addDays($count);
                 }
+
                 if($this->period_unit == 'month') {
-                    $dts = Carbon::parse($this->starts_at);
+                    $day = $this->starts_at->day;
                     $dt = $dt->addMonths($count);
-                    if($dts->day == 30 || $dts->day == 31) {
-                        if($dt->day == 29) {
-                            $dt = $dt->addDay();
-                        } else if($dt->day == 30) {
-                            if($dt->addDay()->day == 31) {
-                                $dt = $dt;
-                            }
-                        }
+
+                    while($day > $dt->daysInMonth){
+                        $day--;
                     }
-                    $this->expires_at = $dt->toDateTimeString();
+
+                    $dt->day = $day;
+
+                    $this->expires_at = $dt;
                 }
                 if($this->period_unit == 'year') {
-                    $this->expires_at = $dt->addYears($count)->toDateTimeString();
+                    $this->expires_at = $dt->addYears($count);
                 }
                 if($this->period_unit == null) {
                     $this->expires_at = null;
@@ -249,6 +249,15 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
         return false;
     }
 
+    public function getUnitsOf(string $featureCode) {
+        $feature = $this->features()->limitType()->where('code', $featureCode)->first();
+        if ($feature) {
+            $total = $feature->pivot->limit;
+            return $total;
+        }
+        return null;
+    }
+
     public function getUsageOf(string $featureCode) {
         $feature = $this->features()->limitType()->where('code', $featureCode)->first();
         if ($feature) {
@@ -267,5 +276,21 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
             return $remaining;
         }
         return null;
+    }
+
+    public function setFeatureLimit(string $featureCode, int $limit){
+        $usage = $this->getUsageOf($featureCode);
+        if($limit < $usage){
+            return false;
+        }
+
+        $usagePivot = $this->features()->where('code', $featureCode)->limitType()->first();
+        if($usagePivot){
+            $usagePivot->pivot->limit = $limit;
+            $usagePivot->pivot->save();
+            return true;
+        }
+
+        return false;
     }
 }

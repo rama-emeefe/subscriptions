@@ -138,6 +138,14 @@ interface PlanSubscriptionInterface{
     public function unconsumeFeature(string $featureCode, int $units = 1);
 
     /**
+     * Returns the total of a limited feature
+     * 
+     * @param string $featureCode
+     * @return int      Total or null if fails
+     */
+    public function getUnitsOf(string $featureCode);
+
+    /**
      * Returns the usage of a feature
      * 
      * @param string $featureCode

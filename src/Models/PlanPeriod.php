@@ -32,6 +32,10 @@ class PlanPeriod extends Model implements PlanPeriodInterface{
         return $query->where('is_visible', 0);
     }
 
+    public function scopeDefault($query) {
+        return $query->where('is_default', 1);
+    }
+
     public function isRecurring() {
         return $this->is_recurring;
     }
@@ -53,11 +57,7 @@ class PlanPeriod extends Model implements PlanPeriodInterface{
     }
 
     public function isDefault() {
-        if ($this->is_default) {
-            return true;
-        }
-        return false;
-        // return $this->is_default;
+        return !!$this->is_default;
     }
 
     public function isFree() {

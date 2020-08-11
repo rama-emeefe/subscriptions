@@ -56,7 +56,7 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
             'database' => ':memory:',
             'prefix'   => '',
         ]);
-        $app['config']->set('subscriptions.tables', [
+        $app['config']->set('emeefe.subscriptions.tables', [
             'plans' => 'plans',
             'plan_types' => 'plan_types',
             'plan_features' => 'plan_features',
@@ -66,7 +66,7 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
             'plan_subscriptions' => 'plan_subscriptions',
             'plan_subscription_usage' => 'plan_subscription_usage'
         ]);
-        $app['config']->set('subscriptions.models', [
+        $app['config']->set('emeefe.subscriptions.models', [
             'plan' => \Emeefe\Subscriptions\Models\Plan::class,
             'feature' => \Emeefe\Subscriptions\Models\PlanFeature::class,
             'period' => \Emeefe\Subscriptions\Models\PlanPeriod::class,

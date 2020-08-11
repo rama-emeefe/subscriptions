@@ -9,15 +9,40 @@
 
 2. Publicar recursos (migraciones y archivo de configuración):
     ```shell
-    php artisan rinvex:publish:subscriptions
+    php artisan vendor:publish --provider='Emeefe\Subscriptions\SubscriptionsServiceProvider'
     ```
 
-3. Execute migrations via the following command:
+3. Configurar
+
+El archivo de configuración `emeefe.subscriptions` permite definir los nombres de las tablas a usar/crear antes de ejecutar migraciones o después en caso de renombrarlas, además permite especificar los modelos que serán usados. Por default la configuración es la siguiente:
+
+```php
+[
+    'tables' => [
+        'plans' => 'plans',
+        'plan_types' => 'plan_types',
+        'plan_features' => 'plan_features',
+        'plan_type_feature' => 'plan_type_feature',
+        'plan_feature_values' => 'plan_feature_values',
+        'plan_periods' => 'plan_periods',
+        'plan_subscriptions' => 'plan_subscriptions',
+        'plan_subscription_usage' => 'plan_subscription_usage',
+    ],
+
+    'models' => [
+        'plan' => \Emeefe\Subscriptions\Models\Plan::class,
+        'feature' => \Emeefe\Subscriptions\Models\PlanFeature::class,
+        'period' => \Emeefe\Subscriptions\Models\PlanPeriod::class,
+        'subscription' => \Emeefe\Subscriptions\Models\PlanSubscription::class,
+        'type' => \Emeefe\Subscriptions\Models\PlanType::class,
+    ]
+]
+```
+
+4. Ejecutar migraciones
     ```shell
-    php artisan rinvex:migrate:subscriptions
+    php artisan migrate
     ```
-
-4. Done!
 
 # Subscriptions
 ### Tipos de plan (PlanType)
@@ -772,6 +797,16 @@ Devuelve `bool`
 - `true`: Si se puede desconsumir
 - `false`: Si no se puede desconsumir debido a que la cantidad de unidades consumidas es `0`
 
+#### `getUnitsOf(string $featureCode)`
+
+Devuelve el total de un feature limitado relacionado a la suscripción
+
+- `$featureCode`: Código del feature
+
+Devuelve `int` o `null`
+
+- `int`: Si se puede obtener el total
+- `null`: Si el feature no está relacionado o no es del tipo `limit`
 
 #### `getUsageOf(string $featureCode)`
 
