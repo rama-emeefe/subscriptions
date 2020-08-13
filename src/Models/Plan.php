@@ -56,6 +56,7 @@ class Plan extends Model implements PlanInterface{
     public function scopeDefault($query){
         return $query->where('is_default',1);
     }
+    
 
     public function assignFeatureLimitByCode(string $featureCode, int $limit = 0){
         $feature = $this->type->features()->limitType()->where('code', $featureCode)->first();
