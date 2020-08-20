@@ -4,6 +4,7 @@ namespace Emeefe\Subscriptions\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Emeefe\Subscriptions\Contracts\PlanPeriodInterface;
+use Illuminate\Database\Eloquent\Builder;
 
 class PlanPeriod extends Model implements PlanPeriodInterface{
     public const UNIT_DAY = 'day';
@@ -14,6 +15,20 @@ class PlanPeriod extends Model implements PlanPeriodInterface{
     {
         parent::__construct($attributes);
         $this->setTable(config('emeefe.subscriptions.tables.plan_periods'));
+    }
+
+    /**
+     * The "booting" method of the model.
+     *
+     * @return void
+     */
+    protected static function boot(){
+        parent::boot();
+
+        //Only visible periods
+        static::addGlobalScope('withoutHidden', function(Builder $builder){
+            $builder->where('is_visible', '<>', 0);
+        });
     }
 
     public function plan() {
@@ -27,7 +42,11 @@ class PlanPeriod extends Model implements PlanPeriodInterface{
     public function scopeVisible($query) {
         return $query->where('is_visible', 1);
     }
-
+    
+    public function scopeWithHiddens($query){
+        return $query->withoutGlobalScope('withoutHidden');
+    }
+    
     public function scopeHidden($query) {
         return $query->where('is_visible', 0);
     }

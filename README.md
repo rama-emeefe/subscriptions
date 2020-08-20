@@ -213,6 +213,8 @@ La propiedad `code` puede repetirse en los planes siempre y cuando sea de distin
 
 Para indicar que un plan es el plan default dentro del tipo de plan se asigna la propiedad `is_default` a `true`, si esto sucede y ya hay un plan default dentro del tipo de plan entonces el antiguo plan default ya no será default definiendo su propiedad `is_default` a `false`. Esto funciona gracias al evento `saving` del modelo.
 
+Por default un plan se crea visible a menos que se especifique en su campo `is_visible` como `false`, se aplica un scope global para devolver solo los planes visibles, en la sección del modelo se explica esto.
+
 ### Asignación y obtención de límites de features del tipo limit
 Para asignar los límites que tendrá un feture del tipo `limit` en un plan determinado se hace a través del modelo `Plan` de la siguiente manera:
 
@@ -476,6 +478,8 @@ Filtra features por tipo `feature`
 
 ## Plan
 
+El modelo de plan aplica un scope global para devolver siempre los planes visibles, esto se puede desactivar usando el scope `withHiddens` explicado más abajo.
+
 ### Métodos
 
 #### `assignFeatureLimitByCode(int $limit, string $featureCode)`
@@ -565,13 +569,19 @@ Obtiene planes según la clave de su tipo.
 
 Filtra planes visibles
 
+#### `scopewithHiddens($query)`
+
+Permite obtener también los planes ocultos
+
 #### `scopeHidden($query)`
 
-Filtra planes ocultos
+Filtra planes ocultos, es necesario llamar antes a `scopewithHiddens($query)` para obtenerlos
 
 ---
 
 ## PlanPeriod
+
+El modelo de PlanPeriod aplica un scope global para devolver siempre los periodos visibles, esto se puede desactivar usando el scope `withHiddens` explicado más abajo.
 
 ### Métodos
 
@@ -656,9 +666,13 @@ Devuelve las suscripciones asociadas
 
 Filtra periodos visibles
 
+#### `scopewithHiddens($query)`
+
+Permite obtener también los periodos ocultos
+
 #### `scopeHidden($query)`
 
-Filtra periodos ocultos
+Filtra periodos ocultos, es necesario llamar antes a `scopewithHiddens($query)` para obtenerlos
 
 ---
 

@@ -7,7 +7,7 @@ use Emeefe\Subscriptions\Contracts\PlanInterface;
 use Emeefe\Subscriptions\Events\FeatureLimitChangeOnPlan;
 use Emeefe\Subscriptions\Events\FeatureRemovedFromPlan;
 use Emeefe\Subscriptions\Events\NewFeatureOnPlan;
-
+use Illuminate\Database\Eloquent\Builder;
 
 class Plan extends Model implements PlanInterface{
 
@@ -22,6 +22,20 @@ class Plan extends Model implements PlanInterface{
     {
         parent::__construct($attributes);
         $this->setTable(config('emeefe.subscriptions.tables.plans'));
+    }
+
+    /**
+     * The "booting" method of the model.
+     *
+     * @return void
+     */
+    protected static function boot(){
+        parent::boot();
+
+        //Only visible plans
+        static::addGlobalScope('withoutHidden', function(Builder $builder){
+            $builder->where('is_visible', '<>', 0);
+        });
     }
 
     public function type(){
@@ -43,6 +57,10 @@ class Plan extends Model implements PlanInterface{
         }
 
         return $query->where('type_id', $planType->id);
+    }
+
+    public function scopeWithHiddens($query){
+        return $query->withoutGlobalScope('withoutHidden');
     }
 
     public function scopeVisible($query){

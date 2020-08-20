@@ -197,8 +197,8 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
         $visiblePlan = $this->createPlan('hidden_plan', $planType, false, [], $isVisible);
 
         $this->assertEquals($planType->plans()->visible()->count(), 1);
-        $this->assertEquals($planType->plans()->hidden()->count(), 1);
-        $this->assertEquals($planType->plans()->count(), 2);
+        $this->assertEquals($planType->plans()->withHiddens()->hidden()->count(), 1);
+        $this->assertEquals($planType->plans()->withHiddens()->count(), 2);
     }
 
     /**
@@ -896,7 +896,7 @@ class SubscriptionsTest extends \Emeefe\Subscriptions\Tests\TestCase
      * @param array    $metadata
      * @return Emeefe\Subscriptions\Plan
      */
-    public function createPlan(string $code, PlanType $type, bool $isDefault = false, $metadata = null, bool $isVisible = false){
+    public function createPlan(string $code, PlanType $type, bool $isDefault = false, $metadata = null, bool $isVisible = true){
         $plan = new Plan();
         $plan->display_name = $this->faker->sentence(3);
         $plan->code = $code;
