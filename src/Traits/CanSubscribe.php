@@ -193,9 +193,9 @@ trait CanSubscribe{
             $id = $planTypeOrType->id;
         }
 
-        return $this->subscriptions()->where([
-            ['starts_at', '<>', null],
-            ['plan_type_id', $id],       
-        ])->orderBy('created_at', 'desc')->first();
+        return $this->subscriptions()->whereNotNull('starts_at')
+            ->where('plan_type_id', $id)
+            ->orderBy('created_at', 'desc')
+            ->first();
     }
 }    

@@ -46,7 +46,7 @@ class PlanPeriod extends Model implements PlanPeriodInterface{
     public function scopeWithHiddens($query){
         return $query->withoutGlobalScope('withoutHidden');
     }
-    
+
     public function scopeHidden($query) {
         return $query->where('is_visible', 0);
     }
@@ -56,7 +56,7 @@ class PlanPeriod extends Model implements PlanPeriodInterface{
     }
 
     public function isRecurring() {
-        return $this->is_recurring;
+        return !!$this->is_recurring;
     }
 
     public function isLimitedNonRecurring() {
