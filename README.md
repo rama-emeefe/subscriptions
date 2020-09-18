@@ -418,6 +418,8 @@ Actualiza de una suscripción válida a una nueva cambiando de periodo ya sea de
 
 Una actualización de suscripción no es más que una cancelación de la suscripción válida actual y una asignación a una nueva, cuando la actualización se ejecuta de la manera aquí explicada no se lanza el evento `CancelSubscription` sino el evento `UpdatedSubscription`.
 
+**IMPORTANTE:** Otro punto a tomar en cuenta es que al cambiar de plan se sincronizan los features de límite a la nueva suscripción definiendo el consumo en la nueva suscripción como el mínimo entre el consumo de la antigua suscripción y el límite de la nueva suscripción, si se desea realizar alguna acción extra en la lógica de la aplicación se deberá ejecutar en un Listener del evento `UpdatedSubscription`.
+
 ```php
 ...
 

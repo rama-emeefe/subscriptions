@@ -27,7 +27,7 @@ class PlanSubscription extends Model implements PlanSubscriptionInterface{
         $this->setTable(config('emeefe.subscriptions.tables.plan_subscriptions'));
     }
 
-    public static function period(){
+    public function period(){
         return $this->belongsTo(config('emeefe.subscriptions.models.period'), 'period_id');
     }
 

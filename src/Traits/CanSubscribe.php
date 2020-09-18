@@ -151,6 +151,18 @@ trait CanSubscribe{
             }
         }
 
+        /**
+         * Sync the new features with old features 
+         */
+        foreach ($currentSubscription->features as $oldFeature) {
+            $newFeature = $subscription->features()->where('code', $oldFeature->code)->first();
+            if($oldFeature->pivot->limit && $newFeature){
+                $subscription->features()->updateExistingPivot($newFeature->id, [
+                    'usage' => min($oldFeature->pivot->usage, $newFeature->pivot->limit)
+                ]);
+            }
+        }
+
         event(new UpdatedSubscription($this, $currentSubscription, $subscription));
         return true;
     }
